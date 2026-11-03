@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f7f9f8">
+    <meta name="description" content="Administra las integraciones de inteligencia artificial y servicios externos de CompraSmart AI.">
+
+    <title>Integraciones e IA | CompraSmart AI</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/global.css">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body class="integrations-body">
+
+<div class="integrations-layout">
+
+    <!-- BARRA LATERAL -->
+
+    <aside class="integrations-sidebar" id="sidebar">
+
+        <a href="dashboard.html" class="brand">
+            <div class="brand-icon">
+                <i class="fa-solid fa-cart-shopping"></i>
+            </div>
+            <span>CompraSmart <strong>AI</strong></span>
+        </a>
+
+        <p class="sidebar-label">PRINCIPAL</p>
+
+        <nav class="sidebar-navigation" aria-label="Navegación principal">
+
+            <a href="dashboard.html" class="nav-link">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Resumen</span>
+            </a>
+
+            <a href="dashboard.html#view-invoices" class="nav-link">
+                <i class="fa-solid fa-file-invoice"></i>
+                <span>Facturas</span>
+            </a>
+
+            <a href="dashboard.html#view-comparison" class="nav-link">
+                <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                <span>Comparar precios</span>
+            </a>
+
+            <a href="dashboard.html#view-products" class="nav-link">
+                <i class="fa-solid fa-box"></i>
+                <span>Productos</span>
+            </a>
+
+            <a href="dashboard.html#view-suppliers" class="nav-link">
+                <i class="fa-solid fa-truck-field"></i>
+                <span>Proveedores</span>
+            </a>
+
+            <a href="dashboard.html#view-history" class="nav-link">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>Historial</span>
+            </a>
+
+        </nav>
+
+        <p class="sidebar-label">ADMINISTRACIÓN</p>
+
+        <nav class="sidebar-navigation" aria-label="Administración">
+
+            <a href="integrations.html"
+                class="nav-link active"
+                aria-current="page">
+
+                <i class="fa-solid fa-plug"></i>
+                <span>Integraciones e IA</span>
+
+            </a>
+
+            <a href="dashboard.html#view-settings" class="nav-link">
+                <i class="fa-solid fa-gear"></i>
+                <span>Configuración</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+
+            <div class="sidebar-security">
+
+                <i class="fa-solid fa-shield-halved"></i>
+
+                <div>
+                    <strong>Centro de conexiones</strong>
+                    <span>Gestión de servicios externos</span>
+                </div>
+
+            </div>
+
+            <a href="dashboard.html" class="back-link">
+                <i class="fa-solid fa-arrow-left"></i>
+                Volver al dashboard
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- CONTENIDO PRINCIPAL -->
+
+    <main class="integrations-main">
+
+        <!-- ENCABEZADO -->
+
+        <header class="top-header">
+
+            <button class="mobile-menu-button"
+                id="mobileMenuButton"
+                type="button"
+                aria-label="Abrir menú"
+                aria-expanded="false"
+                aria-controls="sidebar">
+
+                <i class="fa-solid fa-bars"></i>
+
+            </button>
+
+            <div class="header-title">
+
+                <span>ADMINISTRACIÓN / INTEGRACIONES</span>
+                <h1>Integraciones e IA</h1>
+
+            </div>
+
+            <div class="header-profile">
+
+                <div class="profile-avatar" id="profileAvatar">U</div>
+
+                <div>
+                    <strong id="profileOwnerName">Mi cuenta</strong>
+                    <span id="profileBusinessName">CompraSmart AI</span>
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- BIENVENIDA -->
+
+        <section class="welcome-section">
+
+            <div class="welcome-content">
+
+                <span class="welcome-tag">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    CENTRO DE CONEXIONES
+                </span>
+
+                <h2>Conecta la inteligencia de CompraSmart AI</h2>
+
+                <p>
+                    Administra los servicios de inteligencia artificial,
+                    búsqueda web y extracción de información que utiliza
+                    tu plataforma para procesar y analizar compras.
+                </p>
+
+            </div>
+
+            <div class="welcome-illustration" aria-hidden="true">
+                <i class="fa-solid fa-network-wired"></i>
+            </div>
+
+        </section>
+
+
+        <!-- ESTADÍSTICAS -->
+
+        <section class="stats-grid"
+            aria-label="Resumen de integraciones">
+
+            <article class="stat-card">
+
+                <div class="stat-icon purple">
+                    <i class="fa-solid fa-plug"></i>
+                </div>
+
+                <div>
+                    <span>Servicios disponibles</span>
+                    <strong id="totalIntegrations">4</strong>
+                </div>
+
+            </article>
+
+            <article class="stat-card">
+
+                <div class="stat-icon green">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+
+                <div>
+                    <span>Configuraciones verificadas</span>
+                    <strong id="configuredIntegrations">0</strong>
+                </div>
+
+            </article>
+
+            <article class="stat-card">
+
+                <div class="stat-icon orange">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+
+                <div>
+                    <span>Pendientes de configurar</span>
+                    <strong id="pendingIntegrations">4</strong>
+                </div>
+
+            </article>
+
+        </section>
+
+
+        <!-- INTELIGENCIA ARTIFICIAL -->
+
+        <section class="integration-section">
+
+            <div class="section-heading">
+
+                <div>
+                    <span class="section-overline">
+                        INTELIGENCIA ARTIFICIAL
+                    </span>
+
+                    <h2>Asistentes de IA</h2>
+
+                    <p>
+                        Configura los modelos que analizarán
+                        los documentos y datos de tu negocio.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="integration-grid">
+
+                <!-- GEMINI -->
+
+                <article class="integration-card" data-card="gemini">
+
+                    <div class="card-top">
+
+                        <div class="service-icon gemini-icon">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </div>
+
+                        <span class="status pending" id="status-gemini">
+                            Pendiente de verificar
+                        </span>
+
+                    </div>
+
+                    <h3>Google Gemini</h3>
+
+                    <p>
+                        Procesamiento de facturas, reconocimiento
+                        de información, extracción de productos
+                        y análisis de precios.
+                    </p>
+
+                    <div class="card-footer">
+
+                        <span>Servicio: Gemini API</span>
+
+                        <button class="configure-button"
+                            data-integration="gemini"
+                            type="button">
+
+                            Configurar
+                            <i class="fa-solid fa-arrow-right"></i>
+
+                        </button>
+
+                    </div>
+
+                </article>
+
+
+                <!-- OPENAI -->
+
+                <article class="integration-card" data-card="openai">
+
+                    <div class="card-top">
+
+                        <div class="service-icon openai-icon">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+
+                        <span class="status pending" id="status-openai">
+                            Pendiente de verificar
+                        </span>
+
+                    </div>
+
+                    <h3>OpenAI</h3>
+
+                    <p>
+                        Asistentes conversacionales, interpretación
+                        de información y análisis inteligente
+                        de las operaciones comerciales.
+                    </p>
+
+                    <div class="card-footer">
+
+                        <span>Servicio: OpenAI API</span>
+
+                        <button class="configure-button"
+                            data-integration="openai"
+                            type="button">
+
+                            Configurar
+                            <i class="fa-solid fa-arrow-right"></i>
+
+                        </button>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- BÚSQUEDA Y EXTRACCIÓN WEB -->
+
+        <section class="integration-section">
+
+            <div class="section-heading">
+
+                <div>
+                    <span class="section-overline">
+                        INTELIGENCIA COMERCIAL
+                    </span>
+
+                    <h2>Búsqueda y extracción web</h2>
+
+                    <p>
+                        Servicios para localizar información
+                        comercial y estructurar contenido de páginas web.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="integration-grid">
+
+                <!-- SERPAPI -->
+
+                <article class="integration-card" data-card="serpapi">
+
+                    <div class="card-top">
+
+                        <div class="service-icon serpapi-icon">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </div>
+
+                        <span class="status pending" id="status-serpapi">
+                            Pendiente de verificar
+                        </span>
+
+                    </div>
+
+                    <h3>SerpApi</h3>
+
+                    <p>
+                        Búsqueda de productos, comercios,
+                        resultados de búsqueda y referencias
+                        de precios disponibles en Internet.
+                    </p>
+
+                    <div class="card-footer">
+
+                        <span>Tipo: Search API</span>
+
+                        <button class="configure-button"
+                            data-integration="serpapi"
+                            type="button">
+
+                            Configurar
+                            <i class="fa-solid fa-arrow-right"></i>
+
+                        </button>
+
+                    </div>
+
+                </article>
+
+
+                <!-- FIRECRAWL -->
+
+                <article class="integration-card" data-card="firecrawl">
+
+                    <div class="card-top">
+
+                        <div class="service-icon firecrawl-icon">
+                            <i class="fa-solid fa-globe"></i>
+                        </div>
+
+                        <span class="status pending" id="status-firecrawl">
+                            Pendiente de verificar
+                        </span>
+
+                    </div>
+
+                    <h3>Firecrawl</h3>
+
+                    <p>
+                        Extracción y estructuración de contenido
+                        de páginas web para obtener información
+                        útil de productos y comercios.
+                    </p>
+
+                    <div class="card-footer">
+
+                        <span>Tipo: Web Scraping</span>
+
+                        <button class="configure-button"
+                            data-integration="firecrawl"
+                            type="button">
+
+                            Configurar
+                            <i class="fa-solid fa-arrow-right"></i>
+
+                        </button>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- SEGURIDAD -->
+
+        <section class="security-section">
+
+            <div class="security-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+
+            <div>
+
+                <h3>Protección de credenciales</h3>
+
+                <p>
+                    Las claves API son credenciales privadas.
+                    No deben almacenarse en el navegador, en
+                    localStorage, sessionStorage ni en tablas públicas.
+                    Su almacenamiento y utilización requieren
+                    un servicio de servidor seguro.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- PIE DE PÁGINA -->
+
+        <footer class="integrations-footer">
+            © 2026 CompraSmart AI · Administración de integraciones
+        </footer>
+
+    </main>
+
+</div>
+
+
+<!-- ==========================================
+     MODAL DE CONFIGURACIÓN
+=========================================== -->
+
+<div class="integration-modal hidden"
+    id="integrationModal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalTitle">
+
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+
+    <section class="modal-content">
+
+        <header class="modal-header">
+
+            <div>
+
+                <span class="section-overline">
+                    CONFIGURACIÓN DEL SERVICIO
+                </span>
+
+                <h2 id="modalTitle">
+                    Configurar integración
+                </h2>
+
+                <p id="modalDescription">
+                    Configura el servicio seleccionado.
+                </p>
+
+            </div>
+
+            <button class="close-modal"
+                id="closeModal"
+                type="button"
+                aria-label="Cerrar ventana">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+        </header>
+
+
+        <form id="integrationForm" autocomplete="off">
+
+            <input type="hidden" id="providerId" name="providerId">
+
+
+            <div class="form-group">
+
+                <label for="apiKey">
+                    Clave API
+                </label>
+
+                <div class="api-input-container">
+
+                    <input
+                        type="password"
+                        id="apiKey"
+                        name="apiKey"
+                        placeholder="Introduce tu clave API"
+                        autocomplete="new-password"
+                        spellcheck="false"
+                        autocapitalize="off"
+                        required
+                    >
+
+                    <button type="button"
+                        id="toggleApiKey"
+                        aria-label="Mostrar clave API"
+                        aria-pressed="false">
+
+                        <i class="fa-solid fa-eye"></i>
+
+                    </button>
+
+                </div>
+
+                <span class="field-help">
+                    La credencial requiere almacenamiento seguro
+                    en el servidor.
+                </span>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="modelName">
+                    Modelo o servicio
+                </label>
+
+                <input
+                    type="text"
+                    id="modelName"
+                    name="modelName"
+                    placeholder="Ej. gemini-2.5-flash"
+                    autocomplete="off"
+                    maxlength="100"
+                >
+
+                <span class="field-help">
+                    Identificador del modelo o servicio que deseas utilizar.
+                </span>
+
+            </div>
+
+
+            <div class="modal-security-note">
+
+                <i class="fa-solid fa-lock"></i>
+
+                <span>
+                    No compartas tus claves API. No se debe confirmar
+                    una configuración hasta verificar su almacenamiento
+                    y conexión con el servicio.
+                </span>
+
+            </div>
+
+
+            <div id="modalMessage"
+                class="modal-message hidden"
+                role="status"
+                aria-live="polite">
+            </div>
+
+
+            <div class="modal-actions">
+
+                <button type="button"
+                    class="cancel-button"
+                    id="cancelModal">
+                    Cancelar
+                </button>
+
+                <button type="submit"
+                    class="save-button"
+                    id="saveIntegration">
+
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    Guardar configuración
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+</div>
+
+
+<!-- NOTIFICACIONES -->
+
+<div class="toast-container"
+    id="toastContainer"
+    aria-live="polite"
+    aria-atomic="true">
+</div>
+
+
+<!-- ==========================================
+     LIBRERÍAS Y JAVASCRIPT
+=========================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="js/supabase.js" defer></script>
+<script src="js/main.js" defer></script>
+<script src="js/integrations.js" defer></script>
+
+</body>
+</html>
+
+

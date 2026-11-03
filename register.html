@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f7faf8">
+    <meta name="description" content="Crea tu cuenta en CompraSmart AI y comienza a gestionar tus compras, proveedores y facturas de manera inteligente.">
+
+    <title>Crear cuenta | CompraSmart AI</title>
+
+    <!-- FUENTES -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body class="auth-body">
+
+    <main class="auth-page">
+
+        <!-- NAVEGACIÓN -->
+        <header class="auth-nav">
+
+            <a href="index.html" class="brand" aria-label="CompraSmart AI, inicio">
+
+                <span class="brand-icon" aria-hidden="true">C</span>
+
+                <span class="brand-name">
+                    CompraSmart<span class="brand-ai"> AI</span>
+                </span>
+
+            </a>
+
+            <a href="index.html" class="back-link">
+                <span aria-hidden="true">←</span>
+                Volver al inicio
+            </a>
+
+        </header>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <section class="auth-layout">
+
+            <!-- PRESENTACIÓN -->
+            <div class="auth-decoration">
+
+                <span class="auth-eyebrow">
+                    TU NEGOCIO MERECE CRECER
+                </span>
+
+                <h1>
+                    Empieza a<br>
+                    comprar con <span>inteligencia.</span>
+                </h1>
+
+                <p>
+                    Crea tu espacio de trabajo y centraliza la información
+                    de tus compras, proveedores y productos.
+                    Toma decisiones basadas en datos y encuentra
+                    oportunidades para optimizar tus gastos.
+                </p>
+
+                <div class="auth-decoration-card">
+
+                    <div class="decoration-symbol" aria-hidden="true">✦</div>
+
+                    <div>
+                        <strong>Un espacio para tu negocio</strong>
+                        <small>Organización y control desde el inicio.</small>
+                    </div>
+
+                </div>
+
+                <div class="auth-feature-list">
+
+                    <div>
+                        <span aria-hidden="true">✓</span>
+                        Registra y organiza tus facturas.
+                    </div>
+
+                    <div>
+                        <span aria-hidden="true">✓</span>
+                        Administra tus proveedores y productos.
+                    </div>
+
+                    <div>
+                        <span aria-hidden="true">✓</span>
+                        Compara precios e identifica oportunidades.
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- FORMULARIO -->
+            <section class="auth-card auth-register-card" aria-labelledby="registerTitle">
+
+                <div class="auth-card-header">
+
+                    <div class="auth-icon" aria-hidden="true">＋</div>
+
+                    <span class="auth-card-eyebrow">
+                        NUEVO ESPACIO DE TRABAJO
+                    </span>
+
+                    <h2 id="registerTitle">
+                        Crea tu cuenta
+                    </h2>
+
+                    <p>
+                        Completa tus datos para comenzar.
+                    </p>
+
+                </div>
+
+                <form id="registerForm" class="auth-form" novalidate>
+
+                    <!-- SECCIÓN 01 -->
+                    <div class="form-section-heading">
+
+                        <span class="form-section-number">01</span>
+
+                        <div>
+                            <strong>Información del negocio</strong>
+                            <small>Identifica tu espacio comercial.</small>
+                        </div>
+
+                    </div>
+
+                    <!-- NEGOCIO -->
+                    <div class="form-group">
+
+                        <label for="businessName">
+                            Nombre del negocio
+                        </label>
+
+                        <input
+                            type="text"
+                            id="businessName"
+                            name="businessName"
+                            placeholder="Ej. Bodega San Martín"
+                            autocomplete="organization"
+                            maxlength="100"
+                            required
+                        >
+
+                    </div>
+
+                    <!-- PROPIETARIO -->
+                    <div class="form-group">
+
+                        <label for="ownerName">
+                            Nombre del propietario
+                        </label>
+
+                        <input
+                            type="text"
+                            id="ownerName"
+                            name="ownerName"
+                            placeholder="Ingresa tu nombre completo"
+                            autocomplete="name"
+                            maxlength="100"
+                            required
+                        >
+
+                    </div>
+
+                    <!-- SECCIÓN 02 -->
+                    <div class="form-section-heading">
+
+                        <span class="form-section-number">02</span>
+
+                        <div>
+                            <strong>Datos de acceso</strong>
+                            <small>Configura tus credenciales de ingreso.</small>
+                        </div>
+
+                    </div>
+
+                    <!-- CORREO -->
+                    <div class="form-group">
+
+                        <label for="registerEmail">
+                            Correo electrónico
+                        </label>
+
+                        <input
+                            type="email"
+                            id="registerEmail"
+                            name="email"
+                            placeholder="ejemplo@correo.com"
+                            autocomplete="email"
+                            autocapitalize="none"
+                            spellcheck="false"
+                            maxlength="254"
+                            required
+                        >
+
+                    </div>
+
+                    <!-- CONTRASEÑA -->
+                    <div class="form-group">
+
+                        <label for="registerPassword">
+                            Contraseña
+                        </label>
+
+                        <div class="password-wrapper">
+
+                            <input
+                                type="password"
+                                id="registerPassword"
+                                name="password"
+                                placeholder="Crea una contraseña segura"
+                                autocomplete="new-password"
+                                minlength="8"
+                                maxlength="72"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="toggle-password"
+                                data-toggle-password="registerPassword"
+                                aria-label="Mostrar contraseña"
+                                aria-pressed="false"
+                            >
+                                <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                            </button>
+
+                        </div>
+
+                        <!-- SEGURIDAD -->
+                        <div class="password-strength" id="passwordStrength" aria-live="polite">
+
+                            <div class="strength-track">
+                                <span id="passwordStrengthBar"></span>
+                            </div>
+
+                            <small id="passwordStrengthText">
+                                Utiliza al menos 8 caracteres.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                    <!-- CONFIRMACIÓN -->
+                    <div class="form-group">
+
+                        <label for="confirmPassword">
+                            Confirmar contraseña
+                        </label>
+
+                        <div class="password-wrapper">
+
+                            <input
+                                type="password"
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                placeholder="Repite tu contraseña"
+                                autocomplete="new-password"
+                                minlength="8"
+                                maxlength="72"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="toggle-password"
+                                data-toggle-password="confirmPassword"
+                                aria-label="Mostrar confirmación de contraseña"
+                                aria-pressed="false"
+                            >
+                                <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                            </button>
+
+                        </div>
+
+                        <small
+                            id="passwordMatchMessage"
+                            class="field-hint"
+                            aria-live="polite"
+                        ></small>
+
+                    </div>
+
+                    <!-- TÉRMINOS -->
+                    <div class="terms-container">
+
+                        <label class="terms-label">
+
+                            <input
+                                type="checkbox"
+                                id="acceptTerms"
+                                name="acceptTerms"
+                                required
+                            >
+
+                            <span>
+                                He leído y acepto las
+                                <a href="legal.html#terms">condiciones de uso</a>
+                                y la
+                                <a href="legal.html#privacy">política de privacidad</a>.
+                            </span>
+
+                        </label>
+
+                    </div>
+
+                    <!-- BOTÓN -->
+                    <button
+                        type="submit"
+                        class="auth-submit"
+                        id="registerButton"
+                    >
+
+                        <span class="button-text">
+                            Crear mi cuenta
+                        </span>
+
+                        <span aria-hidden="true">→</span>
+
+                    </button>
+
+                    <!-- MENSAJES -->
+                    <p
+                        id="registerMessage"
+                        class="form-message"
+                        role="status"
+                        aria-live="polite"
+                    ></p>
+
+                </form>
+
+                <!-- ACCESO -->
+                <div class="auth-divider">
+                    <span>¿Ya tienes una cuenta?</span>
+                </div>
+
+                <a href="login.html" class="auth-register">
+                    Iniciar sesión
+                    <span aria-hidden="true">→</span>
+                </a>
+
+                <p class="auth-legal">
+                    Tu espacio comercial estará asociado a tu cuenta
+                    y protegido mediante los mecanismos de seguridad
+                    de CompraSmart AI.
+                </p>
+
+            </section>
+
+        </section>
+
+        <!-- PIE DE PÁGINA -->
+        <footer class="auth-footer">
+
+            <span>© 2026 CompraSmart AI</span>
+
+            <span>Compras más inteligentes.</span>
+
+        </footer>
+
+    </main>
+
+    <!-- SUPABASE -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+
+    <!-- CONFIGURACIÓN -->
+    <script src="js/supabase.js" defer></script>
+
+    <!-- FUNCIONES GENERALES -->
+    <script src="js/main.js" defer></script>
+
+    <!-- AUTENTICACIÓN -->
+    <script src="js/auth.js" defer></script>
+
+</body>
+</html>

@@ -1,0 +1,1671 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f7faf8">
+
+    <meta name="description"
+        content="CompraSmart AI: administra facturas, compras, productos, proveedores y precios desde un solo lugar.">
+
+    <meta name="author" content="CompraSmart AI">
+
+    <title>Panel de control | CompraSmart AI</title>
+
+    <!-- Fuentes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Estilos principales -->
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+</head>
+
+<body class="dashboard-body">
+
+<div class="dashboard-layout">
+
+    <!-- ==========================================
+         BARRA LATERAL
+    =========================================== -->
+
+    <aside class="sidebar" id="sidebar">
+
+        <a href="dashboard.html" class="sidebar-brand">
+
+            <span class="brand-icon">C</span>
+
+            <span class="sidebar-brand-text">
+                <strong>CompraSmart</strong>
+                <small>AI · GESTIÓN INTELIGENTE</small>
+            </span>
+
+        </a>
+
+        <div class="sidebar-label">MENÚ PRINCIPAL</div>
+
+        <nav class="sidebar-navigation" aria-label="Menú principal">
+
+            <button type="button"
+                class="nav-item active"
+                data-view="overview"
+                aria-current="page">
+                <span class="nav-icon">⌂</span>
+                <span>Resumen</span>
+            </button>
+
+            <button type="button"
+                class="nav-item"
+                data-view="invoices">
+                <span class="nav-icon">▤</span>
+                <span>Facturas</span>
+            </button>
+
+            <button type="button"
+                class="nav-item"
+                data-view="comparison">
+                <span class="nav-icon">⇄</span>
+                <span>Comparar precios</span>
+            </button>
+
+            <button type="button"
+                class="nav-item"
+                data-view="products">
+                <span class="nav-icon">▦</span>
+                <span>Productos</span>
+            </button>
+
+            <button type="button"
+                class="nav-item"
+                data-view="suppliers">
+                <span class="nav-icon">♧</span>
+                <span>Proveedores</span>
+            </button>
+
+            <button type="button"
+                class="nav-item"
+                data-view="history">
+                <span class="nav-icon">◷</span>
+                <span>Historial de compras</span>
+            </button>
+
+        </nav>
+
+        <div class="sidebar-label secondary-label">
+            HERRAMIENTAS
+        </div>
+
+        <nav class="sidebar-navigation" aria-label="Herramientas">
+
+            <button type="button"
+                class="nav-item"
+                data-view="assistant">
+
+                <span class="nav-icon">✧</span>
+                <span>Asistente IA</span>
+                <span class="nav-badge">IA</span>
+
+            </button>
+
+            <button type="button"
+                class="nav-item"
+                data-view="integrations">
+
+                <span class="nav-icon">⌘</span>
+                <span>Integraciones</span>
+
+            </button>
+
+            <button type="button"
+                class="nav-item"
+                data-view="settings">
+
+                <span class="nav-icon">⚙</span>
+                <span>Mi negocio</span>
+
+            </button>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+
+            <div class="sidebar-help">
+
+                <div class="help-icon">?</div>
+
+                <div>
+                    <strong>Centro de ayuda</strong>
+                    <p>Información y orientación sobre la plataforma.</p>
+                </div>
+
+            </div>
+
+            <button type="button"
+                class="logout-link"
+                id="logoutButton">
+
+                <span>↪</span>
+                Cerrar sesión
+
+            </button>
+
+            <div class="sidebar-version">
+                CompraSmart AI · 2026
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- ==========================================
+         CONTENIDO PRINCIPAL
+    =========================================== -->
+
+    <main class="dashboard-main">
+
+        <!-- ENCABEZADO -->
+
+        <header class="dashboard-header">
+
+            <div class="header-left">
+
+                <button type="button"
+                    class="mobile-menu-button"
+                    id="mobileMenuButton"
+                    aria-label="Abrir menú"
+                    aria-expanded="false"
+                    aria-controls="sidebar">
+                    ☰
+                </button>
+
+                <div>
+                    <span class="header-date" id="currentDate">
+                        PANEL DE CONTROL
+                    </span>
+
+                    <h1 id="pageTitle">
+                        Resumen general
+                    </h1>
+                </div>
+
+            </div>
+
+            <div class="header-right">
+
+                <button type="button"
+                    class="header-icon-button"
+                    id="notificationsButton"
+                    aria-label="Notificaciones">
+                    ♧
+                </button>
+
+                <div class="profile-area">
+
+                    <div class="profile-avatar" id="profileAvatar">
+                        U
+                    </div>
+
+                    <div class="profile-information">
+
+                        <strong id="profileBusinessName">
+                            Mi negocio
+                        </strong>
+
+                        <span id="profileOwnerName">
+                            Usuario
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- ======================================
+             01. RESUMEN GENERAL
+        ======================================= -->
+
+        <section class="dashboard-view active" id="view-overview">
+
+            <div class="welcome-section">
+
+                <div>
+
+                    <span class="section-eyebrow">
+                        PANEL GENERAL
+                    </span>
+
+                    <h2>Bienvenido a CompraSmart AI</h2>
+
+                    <p>
+                        Consulta la actividad de tu negocio,
+                        organiza tus compras y toma decisiones
+                        con información centralizada.
+                    </p>
+
+                </div>
+
+                <button type="button"
+                    class="primary-button"
+                    data-go-view="invoices">
+                    + Registrar factura
+                </button>
+
+            </div>
+
+
+            <!-- INDICADORES -->
+
+            <div class="dashboard-section-heading">
+
+                <div>
+                    <h3>Indicadores de tu negocio</h3>
+                    <p>Resumen de tus registros comerciales.</p>
+                </div>
+
+            </div>
+
+            <div class="metrics-grid">
+
+                <article class="metric-card">
+
+                    <div class="metric-top">
+                        <span>Facturas registradas</span>
+                        <span class="metric-icon">▤</span>
+                    </div>
+
+                    <strong id="overviewInvoiceCount">—</strong>
+
+                    <small id="overviewInvoiceDescription">
+                        Información pendiente de cargar
+                    </small>
+
+                </article>
+
+                <article class="metric-card">
+
+                    <div class="metric-top">
+                        <span>Total de compras</span>
+                        <span class="metric-icon">S/</span>
+                    </div>
+
+                    <strong id="overviewPurchaseTotal">
+                        S/ 0.00
+                    </strong>
+
+                    <small>
+                        Según los comprobantes registrados
+                    </small>
+
+                </article>
+
+                <article class="metric-card">
+
+                    <div class="metric-top">
+                        <span>Productos</span>
+                        <span class="metric-icon">▦</span>
+                    </div>
+
+                    <strong id="overviewProductCount">—</strong>
+
+                    <small id="overviewProductDescription">
+                        Productos registrados
+                    </small>
+
+                </article>
+
+                <article class="metric-card">
+
+                    <div class="metric-top">
+                        <span>Proveedores</span>
+                        <span class="metric-icon">♧</span>
+                    </div>
+
+                    <strong id="overviewSupplierCount">—</strong>
+
+                    <small id="overviewSupplierDescription">
+                        Proveedores registrados
+                    </small>
+
+                </article>
+
+            </div>
+
+
+            <!-- ANÁLISIS DE COMPRAS -->
+
+            <div class="dashboard-section-heading">
+
+                <div>
+                    <h3>Análisis de compras</h3>
+                    <p>Visualiza la evolución de tus operaciones.</p>
+                </div>
+
+            </div>
+
+            <div class="analytics-grid">
+
+                <article class="analytics-card">
+
+                    <div class="analytics-card-header">
+
+                        <div>
+                            <h3>Evolución de compras</h3>
+                            <p>Importes registrados por periodo.</p>
+                        </div>
+
+                        <span class="chart-period">
+                            Histórico
+                        </span>
+
+                    </div>
+
+                    <div class="chart-container">
+
+                        <canvas
+                            id="purchaseEvolutionChart"
+                            aria-label="Gráfico de evolución de compras"
+                            role="img">
+                        </canvas>
+
+                    </div>
+
+                    <p class="chart-empty-message"
+                        id="purchaseChartEmpty">
+
+                        El gráfico aparecerá cuando existan
+                        compras registradas.
+
+                    </p>
+
+                </article>
+
+                <article class="analytics-card">
+
+                    <div class="analytics-card-header">
+
+                        <div>
+                            <h3>Distribución de compras</h3>
+                            <p>Distribución de productos registrados por categoría.</p>
+                        </div>
+
+                    </div>
+
+                    <div class="chart-container chart-container-small">
+
+                        <canvas
+                            id="categoryDistributionChart"
+                            aria-label="Gráfico de distribución por categoría"
+                            role="img">
+                        </canvas>
+
+                    </div>
+
+                    <p class="chart-empty-message"
+                        id="categoryChartEmpty">
+
+                        Registra productos y compras para visualizar
+                        la distribución.
+
+                    </p>
+
+                </article>
+
+            </div>
+
+
+            <!-- ACCESOS RÁPIDOS -->
+
+            <div class="dashboard-section-heading">
+
+                <div>
+                    <h3>Accesos rápidos</h3>
+                    <p>Continúa con las tareas principales de tu negocio.</p>
+                </div>
+
+            </div>
+
+            <div class="quick-actions-grid">
+
+                <button type="button"
+                    class="quick-action-card"
+                    data-go-view="invoices">
+
+                    <span class="quick-action-icon">▤</span>
+                    <strong>Registrar factura</strong>
+                    <p>Sube y organiza tus comprobantes.</p>
+                    <span class="action-arrow">→</span>
+
+                </button>
+
+                <button type="button"
+                    class="quick-action-card"
+                    data-go-view="comparison">
+
+                    <span class="quick-action-icon">⇄</span>
+                    <strong>Comparar precios</strong>
+                    <p>Consulta precios de tus proveedores.</p>
+                    <span class="action-arrow">→</span>
+
+                </button>
+
+                <button type="button"
+                    class="quick-action-card"
+                    data-go-view="products">
+
+                    <span class="quick-action-icon">▦</span>
+                    <strong>Administrar productos</strong>
+                    <p>Organiza tu catálogo comercial.</p>
+                    <span class="action-arrow">→</span>
+
+                </button>
+
+                <button type="button"
+                    class="quick-action-card"
+                    data-go-view="suppliers">
+
+                    <span class="quick-action-icon">♧</span>
+                    <strong>Agregar proveedor</strong>
+                    <p>Registra nuevos contactos comerciales.</p>
+                    <span class="action-arrow">→</span>
+
+                </button>
+
+            </div>
+
+
+            <!-- ACTIVIDAD RECIENTE -->
+
+            <div class="dashboard-section-heading">
+
+                <div>
+                    <h3>Actividad reciente</h3>
+                    <p>Últimos movimientos registrados.</p>
+                </div>
+
+                <button type="button"
+                    class="secondary-button"
+                    data-go-view="history">
+                    Ver historial →
+                </button>
+
+            </div>
+
+            <div class="empty-state-card"
+                id="overviewActivityEmpty">
+
+                <div class="empty-state-icon">◷</div>
+
+                <h3>Tu actividad aparecerá aquí</h3>
+
+                <p>
+                    Cuando registres facturas y compras,
+                    podrás consultar los movimientos de tu negocio.
+                </p>
+
+                <button type="button"
+                    class="secondary-button"
+                    data-go-view="invoices">
+                    Registrar primera factura
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- ======================================
+             02. FACTURAS
+        ======================================= -->
+
+        <section class="dashboard-view" id="view-invoices">
+
+            <div class="page-heading">
+
+                <div>
+                    <span class="section-eyebrow">
+                        DOCUMENTOS COMERCIALES
+                    </span>
+
+                    <h2>Facturas y comprobantes</h2>
+
+                    <p>
+                        Almacena tus documentos y procesa su información
+                        mediante reconocimiento inteligente.
+                    </p>
+                </div>
+
+                <button type="button"
+                    class="primary-button"
+                    id="uploadInvoiceButton">
+                    + Subir factura
+                </button>
+
+            </div>
+
+            <input
+                type="file"
+                id="invoiceFile"
+                accept=".jpg,.jpeg,.png,.webp,.pdf"
+                aria-label="Seleccionar factura"
+                hidden
+            >
+
+            <div id="invoiceUploadMessage"
+                class="invoice-upload-message"
+                aria-live="polite">
+            </div>
+
+
+            <!-- REGISTRO DE DOCUMENTOS -->
+
+            <div class="supplier-form-card">
+
+                <div class="supplier-list-header">
+
+                    <div>
+                        <h3>Registrar comprobante</h3>
+
+                        <p>
+                            Formatos admitidos: PDF, JPG, PNG y WEBP.
+                            Tamaño máximo: 10 MB.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="empty-state-card"
+                    id="invoiceEmptyState">
+
+                    <div class="empty-state-icon">▤</div>
+
+                    <h3>Comienza registrando una factura</h3>
+
+                    <p>
+                        Selecciona un comprobante para almacenarlo
+                        en tu espacio privado y solicitar su análisis.
+                    </p>
+
+                    <button type="button"
+                        class="secondary-button"
+                        id="emptyUploadButton">
+                        Seleccionar documento
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- RESULTADO OCR -->
+
+            <div class="supplier-list-card"
+                id="invoiceOcrResult"
+                hidden>
+
+                <div class="supplier-list-header">
+
+                    <div>
+                        <h3>Resultado del procesamiento</h3>
+                        <p>Información identificada en el comprobante.</p>
+                    </div>
+
+                </div>
+
+                <div id="invoiceOcrResultContent"></div>
+
+            </div>
+
+
+            <!-- LISTADO DE FACTURAS -->
+
+            <div class="supplier-list-card">
+
+                <div class="supplier-list-header">
+
+                    <div>
+                        <h3>Mis facturas</h3>
+                        <p>Consulta tus documentos y su estado.</p>
+                    </div>
+
+                    <div class="supplier-search">
+
+                        <input type="search"
+                            id="invoiceSearch"
+                            placeholder="Buscar factura..."
+                            aria-label="Buscar factura">
+
+                    </div>
+
+                </div>
+
+                <div class="table-responsive">
+
+                    <table class="data-table" id="invoicesTable">
+
+                        <thead>
+                            <tr>
+                                <th>Documento</th>
+                                <th>Fecha</th>
+                                <th>Estado de procesamiento</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="invoicesTableBody">
+
+                            <tr>
+                                <td colspan="4">
+                                    Cargando documentos...
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ======================================
+             03. COMPARACIÓN DE PRECIOS
+        ======================================= -->
+
+        <section class="dashboard-view" id="view-comparison">
+
+            <div class="page-heading">
+
+                <div>
+                    <span class="section-eyebrow">
+                        ANÁLISIS COMERCIAL
+                    </span>
+
+                    <h2>Comparación de precios</h2>
+
+                    <p>
+                        Identifica diferencias de precios entre
+                        proveedores para los mismos productos.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="supplier-list-card">
+
+                <div class="supplier-list-header">
+
+                    <div>
+                        <h3>Buscar producto</h3>
+                        <p>Consulta los precios registrados en tus compras.</p>
+                    </div>
+
+                </div>
+
+                <div class="comparison-toolbar">
+                    <div class="supplier-search comparison-local-search">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                        <input type="search"
+                            id="comparisonSearch"
+                            placeholder="Filtrar precios de tu historial..."
+                            aria-label="Filtrar precios registrados">
+                    </div>
+                    <div class="comparison-web-search">
+                        <label for="webSupplierSearch">Buscar precios y proveedores en Internet</label>
+                        <div class="comparison-web-controls">
+                            <input type="search" id="webSupplierSearch"
+                                placeholder="Ej. arroz, aceite, papel A4..."
+                                aria-label="Producto para buscar en Internet">
+                            <button type="button" class="primary-button" id="webSupplierSearchButton">
+                                <i class="fa-solid fa-globe" aria-hidden="true"></i>
+                                Buscar en la web
+                            </button>
+                        </div>
+                        <div class="web-search-links" id="webSearchLinks" aria-live="polite">
+                            <span>La búsqueda abrirá resultados actuales en sitios externos; no se inventan precios ni cotizaciones.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="comparisonResults">
+
+                    <div class="empty-state-card"
+                        id="comparisonEmptyState">
+
+                        <div class="empty-state-icon">⇄</div>
+
+                        <h3>Aún no hay precios comparables</h3>
+
+                        <p>
+                            Registra facturas y productos para construir
+                            un historial de precios por proveedor.
+                        </p>
+
+                        <button type="button"
+                            class="secondary-button"
+                            data-go-view="invoices">
+                            Ir a facturas
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ======================================
+             04. PRODUCTOS
+        ======================================= -->
+
+        <section class="dashboard-view" id="view-products">
+
+            <div class="page-heading">
+
+                <div>
+                    <span class="section-eyebrow">
+                        CATÁLOGO COMERCIAL
+                    </span>
+
+                    <h2>Productos</h2>
+
+                    <p>
+                        Administra los productos que compras
+                        y comercializas en tu negocio.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <!-- FORMULARIO DE PRODUCTOS -->
+
+            <div class="supplier-form-card">
+
+                <div class="supplier-list-header">
+
+                    <div>
+                        <h3 id="productFormTitle">
+                            Registrar producto
+                        </h3>
+
+                        <p>
+                            Completa los datos para incorporarlo
+                            a tu catálogo.
+                        </p>
+                    </div>
+
+                </div>
+
+                <form id="productForm">
+
+                    <div class="supplier-form-grid">
+
+                        <div class="form-group">
+
+                            <label for="productName">
+                                Nombre del producto *
+                            </label>
+
+                            <input type="text"
+                                id="productName"
+                                name="name"
+                                placeholder="Ej. Aceite vegetal"
+                                maxlength="150"
+                                required>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="productCategory">
+                                Categoría *
+                            </label>
+
+                            <select id="productCategory"
+                                name="category"
+                                required>
+
+                                <option value="">
+                                    Seleccionar categoría
+                                </option>
+
+                                <option value="Alimentos">Alimentos</option>
+                                <option value="Bebidas">Bebidas</option>
+                                <option value="Limpieza">Limpieza</option>
+                                <option value="Higiene personal">Higiene personal</option>
+                                <option value="Lácteos">Lácteos</option>
+                                <option value="Abarrotes">Abarrotes</option>
+                                <option value="Tecnología">Tecnología</option>
+                                <option value="Otros">Otros</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="productBrand">Marca</label>
+
+                            <input type="text"
+                                id="productBrand"
+                                name="brand"
+                                placeholder="Ej. Primor"
+                                maxlength="100">
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="productUnit">
+                                Unidad de medida *
+                            </label>
+
+                            <select id="productUnit"
+                                name="unit"
+                                required>
+
+                                <option value="">
+                                    Seleccionar unidad
+                                </option>
+
+                                <option value="Unidad">Unidad</option>
+                                <option value="Kilogramo">Kilogramo</option>
+                                <option value="Gramo">Gramo</option>
+                                <option value="Litro">Litro</option>
+                                <option value="Mililitro">Mililitro</option>
+                                <option value="Paquete">Paquete</option>
+                                <option value="Caja">Caja</option>
+                                <option value="Docena">Docena</option>
+                                <option value="Metro">Metro</option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div class="supplier-form-actions">
+
+                        <button type="submit"
+                            class="primary-button"
+                            id="saveProductButton">
+                            Guardar producto
+                        </button>
+
+                        <button type="reset"
+                            class="secondary-button"
+                            id="cancelProductButton">
+                            Limpiar formulario
+                        </button>
+
+                    </div>
+
+                    <p id="productFormMessage"
+                        class="form-message"
+                        aria-live="polite">
+                    </p>
+
+                </form>
+
+            </div>
+
+
+            <!-- TABLA DE PRODUCTOS -->
+
+            <div class="supplier-list-card">
+
+                <div class="supplier-list-header">
+
+                    <div>
+                        <h3>Catálogo de productos</h3>
+                        <p>Productos registrados en tu negocio.</p>
+                    </div>
+
+                    <div class="supplier-search">
+
+                        <input type="search"
+                            id="productSearch"
+                            placeholder="Buscar producto..."
+                            aria-label="Buscar producto">
+
+                    </div>
+
+                </div>
+
+                <div class="table-responsive">
+
+                    <table class="data-table" id="productsTable">
+
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th>Marca</th>
+                                <th>Unidad</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="productsTableBody">
+
+                            <tr>
+                                <td colspan="5">
+                                    Cargando productos...
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ======================================
+             05. PROVEEDORES
+        ======================================= -->
+
+        <section class="dashboard-view" id="view-suppliers">
+
+            <div class="page-heading">
+
+                <div>
+                    <span class="section-eyebrow">
+                        RED COMERCIAL
+                    </span>
+
+                    <h2>Proveedores</h2>
+
+                    <p>
+                        Centraliza los datos de las empresas
+                        y personas que abastecen tu negocio.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <!-- FORMULARIO DE PROVEEDORES -->
+
+            <div class="supplier-form-card">
+
+                <div class="supplier-list-header">
+
+                    <div>
+                        <h3>Registrar proveedor</h3>
+                        <p>Ingresa los datos de contacto y comerciales.</p>
+                    </div>
+
+                </div>
+
+                <form id="supplierForm">
+
+                    <div class="supplier-form-grid">
+
+                        <div class="form-group">
+
+                            <label for="supplierName">
+                                Nombre o razón social *
+                            </label>
+
+                            <input type="text"
+                                id="supplierName"
+                                name="name"
+                                placeholder="Ej. Distribuidora San Martín"
+                                maxlength="150"
+                                required>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="supplierRuc">RUC</label>
+
+                            <input type="text"
+                                id="supplierRuc"
+                                name="ruc"
+                                placeholder="11 dígitos"
+                                inputmode="numeric"
+                                pattern="[0-9]{11}"
+                                maxlength="11">
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="supplierPhone">Teléfono</label>
+
+                            <input type="tel"
+                                id="supplierPhone"
+                                name="phone"
+                                placeholder="Ej. 987654321"
+                                maxlength="20">
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="supplierEmail">
+                                Correo electrónico
+                            </label>
+
+                            <input type="email"
+                                id="supplierEmail"
+                                name="email"
+                                placeholder="proveedor@correo.com"
+                                maxlength="254">
+
+                        </div>
+
+                        <div class="form-group supplier-address-field">
+
+                            <label for="supplierAddress">
+                                Dirección
+                            </label>
+
+                            <input type="text"
+                                id="supplierAddress"
+                                name="address"
+                                placeholder="Dirección del proveedor"
+                                maxlength="250">
+
+                        </div>
+
+                    </div>
+
+                    <div class="supplier-form-actions">
+
+                        <button type="submit"
+                            class="primary-button"
+                            id="saveSupplierButton">
+                            Guardar proveedor
+                        </button>
+
+                        <button type="reset"
+                            class="secondary-button"
+                            id="cancelSupplierButton">
+                            Limpiar formulario
+                        </button>
+
+                    </div>
+
+                    <p id="supplierFormMessage"
+                        class="form-message"
+                        aria-live="polite">
+                    </p>
+
+                </form>
+
+            </div>
+
+
+            <!-- DIRECTORIO DE PROVEEDORES -->
+
+            <div class="supplier-list-card">
+
+                <div class="supplier-list-header">
+
+                    <div>
+                        <h3>Directorio de proveedores</h3>
+                        <p>Consulta y administra tus contactos comerciales.</p>
+                    </div>
+
+                    <div class="supplier-search">
+
+                        <input type="search"
+                            id="supplierSearch"
+                            placeholder="Buscar proveedor..."
+                            aria-label="Buscar proveedor">
+
+                    </div>
+
+                </div>
+
+                <div class="table-responsive">
+
+                    <table class="data-table" id="suppliersTable">
+
+                        <thead>
+                            <tr>
+                                <th>Proveedor</th>
+                                <th>RUC</th>
+                                <th>Teléfono</th>
+                                <th>Correo electrónico</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="suppliersTableBody">
+
+                            <tr>
+                                <td colspan="5">
+                                    Cargando proveedores...
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ======================================
+             06. HISTORIAL DE COMPRAS
+        ======================================= -->
+
+        <section class="dashboard-view" id="view-history">
+
+            <div class="page-heading">
+
+                <div>
+                    <span class="section-eyebrow">
+                        REGISTRO COMERCIAL
+                    </span>
+
+                    <h2>Historial de compras</h2>
+
+                    <p>
+                        Consulta los comprobantes y movimientos
+                        que forman parte de tu historial.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="metrics-grid">
+
+                <article class="metric-card">
+
+                    <div class="metric-top">
+                        <span>Compras procesadas</span>
+                        <span class="metric-icon">▤</span>
+                    </div>
+
+                    <strong id="historyPurchaseCount">—</strong>
+
+                    <small>Comprobantes procesados</small>
+
+                </article>
+
+                <article class="metric-card">
+
+                    <div class="metric-top">
+                        <span>Importe acumulado</span>
+                        <span class="metric-icon">S/</span>
+                    </div>
+
+                    <strong id="historyPurchaseAmount">
+                        S/ 0.00
+                    </strong>
+
+                    <small>Total de compras registradas</small>
+
+                </article>
+
+            </div>
+
+            <div class="supplier-list-card">
+
+                <div class="supplier-list-header">
+
+                    <div>
+                        <h3>Movimientos de compra</h3>
+                        <p>Historial de operaciones registradas.</p>
+                    </div>
+
+                </div>
+
+                <div class="table-responsive">
+
+                    <table class="data-table" id="historyTable">
+
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Comprobante</th>
+                                <th>Proveedor</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="historyTableBody">
+
+                            <tr>
+                                <td colspan="4">
+                                    No hay movimientos disponibles.
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ======================================
+             07. ASISTENTE IA
+        ======================================= -->
+
+        <section class="dashboard-view" id="view-assistant">
+
+            <div class="page-heading">
+
+                <div>
+                    <span class="section-eyebrow">
+                        INTELIGENCIA ARTIFICIAL
+                    </span>
+
+                    <h2>Asistente inteligente</h2>
+
+                    <p>
+                        Consulta tus datos comerciales y obtén
+                        orientación para gestionar tus compras.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="supplier-list-card">
+
+                <div class="supplier-list-header">
+
+                    <div>
+                        <h3>CompraSmart AI Assistant</h3>
+                        <p>
+                            Asistencia basada en la información de tu negocio.
+                        </p>
+                    </div>
+
+                    <span class="status-pending" id="assistantStatus">
+                        En configuración
+                    </span>
+
+                </div>
+
+                <div class="assistant-welcome">
+
+                    <div class="empty-state-icon">✧</div>
+
+                    <h3>¿Qué deseas consultar?</h3>
+
+                    <p>
+                        El asistente podrá ayudarte a analizar
+                        tus compras, precios y proveedores
+                        cuando se complete su integración.
+                    </p>
+
+                </div>
+
+                <div class="assistant-suggestions">
+
+                    <button type="button"
+                        class="secondary-button"
+                        disabled>
+                        ¿Qué proveedor ofrece mejores precios?
+                    </button>
+
+                    <button type="button"
+                        class="secondary-button"
+                        disabled>
+                        ¿Cuánto gasté en mis compras?
+                    </button>
+
+                    <button type="button"
+                        class="secondary-button"
+                        disabled>
+                        ¿Qué productos han subido de precio?
+                    </button>
+
+                </div>
+
+                <form id="assistantForm">
+
+                    <div class="form-group">
+
+                        <label for="assistantInput">
+                            Escribe tu consulta
+                        </label>
+
+                        <textarea
+                            id="assistantInput"
+                            name="message"
+                            rows="3"
+                            placeholder="Ej. Compara el precio de mis productos."
+                            disabled>
+                        </textarea>
+
+                    </div>
+
+                    <button type="submit"
+                        class="primary-button"
+                        id="assistantSendButton"
+                        disabled>
+                        Enviar consulta
+                    </button>
+
+                    <p>
+                        La función estará disponible cuando
+                        se complete la conexión con el servicio de IA.
+                    </p>
+
+                </form>
+
+                <div id="assistantMessages"
+                    aria-live="polite">
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ======================================
+             08. INTEGRACIONES
+        ======================================= -->
+
+        <section class="dashboard-view" id="view-integrations">
+
+            <div class="page-heading">
+
+                <div>
+                    <span class="section-eyebrow">
+                        SERVICIOS Y CONEXIONES
+                    </span>
+
+                    <h2>Integraciones</h2>
+
+                    <p>
+                        Consulta y administra los servicios tecnológicos
+                        que utiliza CompraSmart AI.
+                    </p>
+                </div>
+
+                <a href="integrations.html"
+                    class="secondary-button">
+                    Administrar integraciones →
+                </a>
+
+            </div>
+
+            <div class="integration-list">
+
+                <article class="integration-card">
+
+                    <div>
+                        <strong>Supabase</strong>
+
+                        <p>
+                            Base de datos, autenticación y almacenamiento
+                            privado de documentos.
+                        </p>
+                    </div>
+
+                    <span class="status-pending"
+                        id="supabaseIntegrationStatus">
+                        Verificando conexión
+                    </span>
+
+                </article>
+
+                <article class="integration-card">
+
+                    <div>
+                        <strong>Google Gemini</strong>
+
+                        <p>
+                            Modelo de inteligencia artificial
+                            para interpretar comprobantes.
+                        </p>
+                    </div>
+
+                    <span class="status-pending"
+                        id="geminiIntegrationStatus">
+                        Estado no verificado
+                    </span>
+
+                </article>
+
+                <article class="integration-card">
+
+                    <div>
+                        <strong>OCR de facturas</strong>
+
+                        <p>
+                            Extracción de información de documentos
+                            PDF e imágenes.
+                        </p>
+                    </div>
+
+                    <span class="status-pending"
+                        id="ocrIntegrationStatus">
+                        Estado no verificado
+                    </span>
+
+                </article>
+
+            </div>
+
+            <div class="empty-state-card">
+
+                <div class="empty-state-icon">⌘</div>
+
+                <h3>Centro de integraciones</h3>
+
+                <p>
+                    Administra las conexiones y consulta
+                    el estado de los servicios disponibles.
+                </p>
+
+                <a href="integrations.html"
+                    class="secondary-button">
+                    Abrir centro de integraciones
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <!-- ======================================
+             09. MI NEGOCIO
+        ======================================= -->
+
+        <section class="dashboard-view" id="view-settings">
+
+            <div class="page-heading">
+
+                <div>
+                    <span class="section-eyebrow">
+                        PERFIL COMERCIAL
+                    </span>
+
+                    <h2>Mi negocio</h2>
+
+                    <p>
+                        Consulta y administra la información
+                        de tu espacio comercial.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <!-- INFORMACIÓN DEL NEGOCIO -->
+
+            <div class="supplier-form-card">
+
+                <div class="supplier-list-header">
+
+                    <div>
+                        <h3>Información del negocio</h3>
+                        <p>Datos generales asociados a tu cuenta.</p>
+                    </div>
+
+                </div>
+
+                <form id="businessSettingsForm">
+
+                    <div class="supplier-form-grid">
+
+                        <div class="form-group">
+
+                            <label for="settingsBusinessName">
+                                Nombre del negocio
+                            </label>
+
+                            <input type="text"
+                                id="settingsBusinessName"
+                                name="businessName"
+                                placeholder="Nombre de tu negocio"
+                                maxlength="100"
+                                required>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="settingsOwnerName">
+                                Nombre del propietario
+                            </label>
+
+                            <input type="text"
+                                id="settingsOwnerName"
+                                name="ownerName"
+                                placeholder="Nombre del propietario"
+                                maxlength="100"
+                                required>
+
+                        </div>
+
+                    </div>
+
+                    <div class="supplier-form-actions">
+
+                        <button type="submit"
+                            class="primary-button"
+                            id="saveBusinessSettingsButton">
+                            Guardar cambios
+                        </button>
+
+                    </div>
+
+                    <p id="businessSettingsMessage"
+                        class="form-message"
+                        aria-live="polite">
+                    </p>
+
+                </form>
+
+            </div>
+
+
+            <!-- INFORMACIÓN DE LA CUENTA -->
+
+            <div class="supplier-list-card">
+
+                <div class="supplier-list-header">
+
+                    <div>
+                        <h3>Cuenta y seguridad</h3>
+                        <p>Información de acceso y administración.</p>
+                    </div>
+
+                </div>
+
+                <div class="settings-information">
+
+                    <div>
+                        <span>Correo electrónico</span>
+                        <strong id="settingsUserEmail">
+                            Cargando...
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Identificador de cuenta</span>
+                        <strong id="settingsUserId">
+                            Cargando...
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ======================================
+             FOOTER
+        ======================================= -->
+
+        <footer class="dashboard-footer">
+
+            <span>© 2026 CompraSmart AI</span>
+
+            <span>
+                Gestión inteligente para tu negocio.
+            </span>
+
+        </footer>
+
+    </main>
+
+</div>
+
+
+<!-- ==========================================
+     LIBRERÍAS EXTERNAS
+=========================================== -->
+
+<!-- Supabase -->
+<script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+</script>
+
+<!-- Chart.js -->
+<script
+    src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js">
+</script>
+
+
+<!-- ==========================================
+     ARCHIVOS JAVASCRIPT DEL PROYECTO
+=========================================== -->
+
+<script src="js/supabase.js" defer></script>
+<script src="js/main.js" defer></script>
+<script src="js/dashboard.js" defer></script>
+
+</body>
+</html>
