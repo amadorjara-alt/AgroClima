@@ -62,3 +62,12 @@ Los archivos se eliminan mediante Storage API después de la transacción de com
 Pruebas: `tests/history-reset.test.mjs`, integración en `tests/ui.test.mjs` y `supabase/tests/reset-history-rls.sql`. La prueba SQL crea negocios ficticios, comprueba aislamiento entre dos usuarios y dos negocios del mismo propietario, y revierte todas sus filas. Instalar esta función no ejecuta un reinicio sobre los datos del grupo.
 
 Verificación de esta entrega: 67 pruebas automáticas aprobadas, nueve archivos JavaScript verificados, prueba SQL con reversión aprobada y comprobación visual con datos ficticios. La función y la cola rechazan peticiones anónimas con HTTP 401. Los 10 comprobantes y archivos originales, cinco credenciales y dos solicitudes OCR permanecieron intactos tras aplicar la migración y probarla.
+
+
+## Corrección móvil y búsqueda web
+
+Se restauran la barra lateral y sus etiquetas, ocultas por reglas CSS antiguas. La navegación incluye fondo para cerrar, botón de cierre, Escape, gestión del foco y desbloqueo al cambiar de tamaño.
+
+La búsqueda usa un solo campo para filtrar compras y consultar fuentes de Internet dentro del panel. La nueva función `search-products` mantiene `verify_jwt = true`, verifica además la identidad con Auth y llama al endpoint fijo de Tavily. No lee documentos privados ni requiere service_role. Valida la consulta, limita el tamaño del cuerpo, recorta los extractos, filtra enlaces inseguros y devuelve errores de cuota o conexión sin exponer respuestas privadas del proveedor. El acceso gratuito sin clave se probó con una consulta real de arroz; la pantalla se probó por separado con datos ficticios identificados como tales.
+
+Validación: 78 pruebas automatizadas, verificación de 10 archivos JS y revisión visual en marcos de 390 × 844, 844 × 390 y 1280 × 850. Las pruebas visuales no se conectan a Supabase ni modifican compras reales. La publicación del frontend debe confirmarse en GitHub Pages antes de anunciar la actualización como visible.

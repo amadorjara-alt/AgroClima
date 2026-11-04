@@ -24,6 +24,7 @@
     <!-- Estilos principales -->
     <link rel="stylesheet" href="css/global.css">
     <link rel="stylesheet" href="css/history-reset.css">
+    <link rel="stylesheet" href="css/dashboard-mobile-search.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 </head>
@@ -37,6 +38,8 @@
     =========================================== -->
 
     <aside class="sidebar" id="sidebar">
+
+        <button type="button" class="mobile-menu-close" id="mobileMenuClose" aria-label="Cerrar menú">×</button>
 
         <a href="dashboard.html" class="sidebar-brand">
 
@@ -163,6 +166,8 @@
         </div>
 
     </aside>
+
+    <button type="button" class="mobile-menu-backdrop" id="mobileMenuBackdrop" aria-label="Cerrar menú" tabindex="-1" hidden></button>
 
 
     <!-- ==========================================
@@ -717,36 +722,38 @@
 
                     <div>
                         <h3>Buscar producto</h3>
-                        <p>Consulta los precios registrados en tus compras.</p>
+                        <p>Filtra tus compras al escribir y busca proveedores en Internet con el botón Buscar.</p>
                     </div>
 
                 </div>
 
                 <div class="comparison-toolbar">
-                    <div class="supplier-search comparison-local-search">
-                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-                        <input type="search"
-                            id="comparisonSearch"
-                            placeholder="Filtrar precios de tu historial..."
-                            aria-label="Filtrar precios registrados">
-                    </div>
-                    <div class="comparison-web-search">
-                        <label for="webSupplierSearch">Buscar precios y proveedores en Internet</label>
-                        <div class="comparison-web-controls">
-                            <input type="search" id="webSupplierSearch"
-                                placeholder="Ej. arroz, aceite, papel A4..."
-                                aria-label="Producto para buscar en Internet">
-                            <button type="button" class="primary-button" id="webSupplierSearchButton">
-                                <i class="fa-solid fa-globe" aria-hidden="true"></i>
-                                Buscar en la web
-                            </button>
+                    <form id="productSearchForm" class="comparison-search-form">
+                        <div class="comparison-search-field">
+                            <label for="comparisonSearch">Producto, marca o proveedor</label>
+                            <input type="search" id="comparisonSearch" maxlength="120"
+                                placeholder="Ej. arroz, aceite, papel A4..." autocomplete="off"
+                                aria-describedby="productSearchHelp">
                         </div>
-                        <div class="web-search-links" id="webSearchLinks" aria-live="polite">
-                            <span>La búsqueda abrirá resultados actuales en sitios externos; no se inventan precios ni cotizaciones.</span>
-                        </div>
-                    </div>
+                        <button type="submit" class="primary-button" id="webSupplierSearchButton">
+                            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Buscar
+                        </button>
+                    </form>
+                    <p id="productSearchHelp" class="product-search-help">La búsqueda en Internet muestra las fuentes aquí. Verifica presentación, stock, envío e impuestos en cada proveedor.</p>
+                    <p id="webSupplierSearchStatus" class="product-search-status" role="status" aria-live="polite"></p>
                 </div>
 
+                <section id="webSupplierResults" class="web-supplier-results" aria-labelledby="webSupplierResultsTitle" tabindex="-1" hidden>
+                    <div class="supplier-list-header">
+                        <div>
+                            <h3 id="webSupplierResultsTitle">Resultados en Internet</h3>
+                            <p id="webSupplierResultsCaption"></p>
+                        </div>
+                    </div>
+                    <div id="webSupplierResultList" class="web-search-results-grid"></div>
+                </section>
+
+                <h3 class="comparison-own-title">Precios de tus compras confirmadas</h3>
                 <div id="comparisonResults">
 
                     <div class="empty-state-card"
@@ -1704,6 +1711,7 @@
 <script src="js/purchase-analytics.js" defer></script>
 <script src="js/invoice-review.js" defer></script>
 <script src="js/history-reset.js" defer></script>
+<script src="js/product-search.js" defer></script>
 <script src="js/dashboard.js" defer></script>
 
 </body>

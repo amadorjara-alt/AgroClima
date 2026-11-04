@@ -160,3 +160,56 @@ test('reiniciar desde el dashboard actualiza facturas, historial, importes y com
  assert.equal(d.querySelectorAll('#historyTable thead th').length,5);
  assert.deepEqual(messages.filter(item=>item.type==='error'),[]);dom.window.close();
 });
+
+test('menú móvil visible, cierre con Escape/fondo y navegación sin bloquear el contenido',async()=>{
+ const [html,analyticsCode,dashboardCode]=await Promise.all([source('dashboard.html'),source('js/purchase-analytics.js'),source('js/dashboard.js')]);
+ const {client}=clientFor({businesses:[fixtureBusiness]},new Map(),{});
+ const dom=new JSDOM(html,{url:'https://grupo.example/dashboard.html',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:new VirtualConsole()});
+ const w=dom.window,d=w.document;let changed;
+ const media={matches:true,addEventListener:(_name,callback)=>{changed=callback;}};
+ w.matchMedia=()=>media;w.scrollTo=()=>{};w.CompraSmart={getSupabaseClient:()=>client,showToast(){}};
+ w.eval(analyticsCode);w.eval(dashboardCode);
+ await until(()=>d.getElementById('supabaseIntegrationStatus').textContent.includes('Conectado'));
+ const button=d.getElementById('mobileMenuButton'),sidebar=d.getElementById('sidebar'),backdrop=d.getElementById('mobileMenuBackdrop'),main=d.querySelector('.dashboard-main');
+ button.focus();button.click();
+ assert.equal(sidebar.classList.contains('open'),true);assert.equal(backdrop.hidden,false);assert.equal(main.inert,true);
+ assert.equal(button.getAttribute('aria-expanded'),'true');assert.equal(sidebar.getAttribute('aria-hidden'),'false');
+ assert.equal(d.activeElement.id,'mobileMenuClose');
+ d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+ assert.equal(backdrop.hidden,true);assert.equal(main.inert,false);assert.equal(d.activeElement,button);
+ button.click();backdrop.click();assert.equal(button.getAttribute('aria-expanded'),'false');
+ button.click();d.querySelector('[data-view="products"]').click();
+ assert.equal(d.getElementById('view-products').classList.contains('active'),true);
+ assert.equal(sidebar.classList.contains('open'),false);assert.equal(main.inert,false);assert.equal(w.location.hash,'#view-products');
+ button.click();media.matches=false;changed();
+ assert.equal(main.inert,false);assert.equal(sidebar.inert,false);assert.equal(sidebar.hasAttribute('aria-hidden'),false);assert.equal(backdrop.hidden,true);
+ dom.window.close();
+});
+
+test('una sola búsqueda filtra las compras y muestra fuentes de Internet dentro del dashboard',async()=>{
+ const [html,analyticsCode,searchCode,dashboardCode]=await Promise.all([source('dashboard.html'),source('js/purchase-analytics.js'),source('js/product-search.js'),source('js/dashboard.js')]);
+ const now=new Date().toISOString(),tables={businesses:[fixtureBusiness],suppliers:[],
+  invoices:[{id:'invoice',user_id:USER,business_id:BUSINESS,currency:'PEN',ocr_status:'completed',created_at:now}],
+  products:[{id:'rice',user_id:USER,business_id:BUSINESS,name:'Arroz de prueba',unit:'kg'},{id:'oil',user_id:USER,business_id:BUSINESS,name:'Aceite de prueba',unit:'L'}],
+  price_history:[{id:'a',user_id:USER,product_id:'rice',supplier_id:'supplier',invoice_id:'invoice',unit_price:5,recorded_at:now},{id:'b',user_id:USER,product_id:'oil',supplier_id:'supplier',invoice_id:'invoice',unit_price:9,recorded_at:now}]};
+ const {client,calls}=clientFor(tables,new Map(),{}),originalInvoke=client.functions.invoke;
+ client.functions.invoke=async(name,args)=>name==='search-products'?(calls.push({name,...args}),{data:{success:true,fetched_at:now,results:[
+  {title:'Fuente ficticia para la prueba <img src=x onerror=alert(1)>',url:'https://fuente.example.invalid/arroz',content:'Contenido de prueba, no es una cotización real.'},
+  {title:'Enlace inválido',url:'javascript:alert(1)',content:'No debe mostrarse'}
+ ]}}):originalInvoke(name,args);
+ const dom=new JSDOM(html,{url:'https://grupo.example/dashboard.html',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:new VirtualConsole()});
+ const w=dom.window,d=w.document;w.scrollTo=()=>{};w.CompraSmart={getSupabaseClient:()=>client,showToast(){}};
+ w.eval(analyticsCode);w.eval(searchCode);w.eval(dashboardCode);
+ await until(()=>d.getElementById('comparisonResults').textContent.includes('Arroz de prueba'));
+ const input=d.getElementById('comparisonSearch');input.value='Arroz';input.dispatchEvent(new w.Event('input',{bubbles:true}));
+ assert.match(d.getElementById('comparisonResults').textContent,/Arroz de prueba/);assert.doesNotMatch(d.getElementById('comparisonResults').textContent,/Aceite de prueba/);
+ d.getElementById('productSearchForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+ await until(()=>!d.getElementById('webSupplierResults').hidden);
+ assert.equal(w.location.pathname,'/dashboard.html');assert.equal(d.querySelectorAll('.web-search-result').length,1);
+ assert.equal(d.querySelector('.web-search-result img'),null);assert.match(d.getElementById('webSupplierResults').textContent,/<img/);
+ assert.equal(d.querySelector('.web-search-result a').href,'https://fuente.example.invalid/arroz');
+ assert.deepEqual(JSON.parse(JSON.stringify(calls.find(x=>x.name==='search-products').body)),{query:'Arroz'});
+ assert.equal(d.activeElement.id,'webSupplierResults');assert.equal(d.getElementById('webSupplierSearch'),null);
+ input.value='';input.dispatchEvent(new w.Event('input'));assert.equal(d.getElementById('webSupplierResults').hidden,true);
+ dom.window.close();
+});
