@@ -107,6 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const integrationStates = {};
     const integrationMetadata = {};
+    let projectOCRKeyConfigured = false;
 
     Object.keys(providers).forEach(id => {
         integrationStates[id] = "pending";
@@ -307,7 +308,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (elements.modalDescription) {
             elements.modalDescription.textContent =
-                provider.description;
+                provider.description + (providerId === 'ocrspace' && projectOCRKeyConfigured && !integrationMetadata[providerId]
+                    ? ' La clave del proyecto ya está guardada en Supabase. No es necesario volver a introducirla; una clave personal tendría prioridad en tu cuenta.' : '');
         }
 
         elements.provider.value = providerId;
@@ -615,19 +617,21 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const result = await invokeCredentialVault({ action: "list" });
             const saved = Array.isArray(result.integrations) ? result.integrations : [];
+            projectOCRKeyConfigured = result.services?.ocrspace?.configured === true && result.services.ocrspace.source === 'project';
             Object.keys(providers).forEach(id => {
                 const item = saved.find(entry => entry.provider === id);
                 if (item) integrationMetadata[id] = item;
                 else delete integrationMetadata[id];
                 updateProviderStatus(
                     id,
-                    item ? "configured" : "pending",
-                    item ? "Configurada · conexión pendiente de prueba" : "Pendiente de configuración"
+                    item || (id === 'ocrspace' && projectOCRKeyConfigured) ? "configured" : "pending",
+                    item ? "Configurada · conexión pendiente de prueba" : id === 'ocrspace' && projectOCRKeyConfigured
+                        ? "Clave del proyecto guardada · prueba pendiente con factura" : "Pendiente de configuración"
                 );
             });
         } catch (error) {
             console.warn("CompraSmart AI: no se pudieron cargar estados de integraciones:", error.message);
-            Object.keys(providers).forEach(id => updateProviderStatus(id, "pending", "Servidor seguro no configurado"));
+            Object.keys(providers).forEach(id => updateProviderStatus(id, "error", "No se pudo consultar el estado · reintenta"));
         }
     }
 

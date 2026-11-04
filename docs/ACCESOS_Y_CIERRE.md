@@ -8,7 +8,7 @@ La web ya existe en https://amadorjara-alt.github.io/CompraSmart-AI/. No se nece
 
 ## Lo que debe introducir el grupo
 
-**Falta una clave API gratuita de OCR.space para comprobar el recorrido completo.**
+**La clave gratuita se configura directamente en el servidor. El proyecto ya registra lecturas de OCR.space; estos pasos sirven para configurar o sustituir la clave cuando corresponda.**
 
 1. Abrir https://ocr.space/ocrapi y solicitar la clave Free con un correo del grupo.
 2. Guardarla desde la web → Integraciones → OCR.space → Configurar. El servidor la cifra con el secreto existente.
@@ -45,4 +45,8 @@ La documentación de la configuración está en https://supabase.com/docs/guides
 
 ## Verificaciones ya ejecutadas
 
-Ambas funciones nuevas están activas, RLS y confirmación pasaron pruebas reales con dos identidades, la API OCR leyó el fixture y 55 pruebas automáticas pasaron. Esto no sustituye la prueba interactiva final con la clave y las cuentas del grupo.
+Ambas funciones nuevas están activas, RLS y confirmación pasaron pruebas reales con dos identidades, la API OCR leyó el fixture y 58 pruebas automáticas pasaron. Esto no sustituye la prueba interactiva final con la clave y las cuentas del grupo.
+
+## Comprobación posterior
+
+El proyecto ya registra lecturas de OCR.space y una compra confirmada. Las instrucciones de clave anteriores sirven para configurar o sustituirla, no implican que siga faltando. El resumen diferencia una clave guardada de una lectura realmente registrada.

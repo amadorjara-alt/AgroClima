@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.118.0";
 import { encryptSecret, validateCredentialChange } from "../_shared/credentials.mjs";
+import { ocrConfiguration } from "../_shared/integration-status.mjs";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": Deno.env.get("APP_ORIGIN") || "*",
@@ -51,7 +52,9 @@ Deno.serve(async (request: Request) => {
         .select("provider, model, updated_at")
         .eq("user_id", userData.user.id);
       if (error) throw new Error("No se pudo consultar el estado de las integraciones.");
-      return json({ success: true, integrations: data || [] });
+      return json({ success: true, integrations: data || [], services: {
+        ocrspace: ocrConfiguration(data || [], Boolean(Deno.env.get("OCR_SPACE_API_KEY")?.trim())),
+      } });
     }
 
     if (action === "delete") {
