@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createInvoiceHandler} from '../supabase/functions/_shared/process-invoice.mjs';
 import {encryptSecret,encodeBase64} from '../supabase/functions/_shared/credentials.mjs';
+import {legacySunatDraft} from './fixtures/sunat-receipt.mjs';
 const image=await readFile(new URL('./fixtures/receipt-demo.png',import.meta.url));
 const user='qa-user',business='qa-business',path=`${user}/${business}/receipt.png`;
 function harness(options={}){
@@ -91,4 +92,11 @@ test('los límites de cuota y procesamiento concurrente se distinguen y evitan l
 test('un error real del proveedor marca el intento y no devuelve secretos',async()=>{
  const h=harness({providerStatus:429}),r=await h.request();assert.equal(r.status,429);assert.equal(r.body.code,'OCR_HTTP_ERROR');
  assert.equal(h.calls.find(c=>c.table==='invoices'&&c.action==='update').data.ocr_status,'failed');assert.ok(!JSON.stringify(r.body).includes('ficticia'));
+});
+
+test('recuperar un borrador SUNAT vacío no repite OCR ni modifica compras o documentos',async()=>{
+ const h=harness({row:{ocr_status:'review',ocr_draft:legacySunatDraft}}),r=await h.request();
+ assert.equal(r.status,200);assert.equal(r.body.cached,true);assert.equal(r.body.extracted.items.length,1);
+ assert.equal(r.body.extracted.items[0].unit_price,123.4567);assert.equal(h.providerCalls(),0);
+ assert.equal(h.calls.some(c=>c.admin||c.action==='update'||c.download),false);assert.equal(legacySunatDraft.items.length,0);
 });

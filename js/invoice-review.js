@@ -1,6 +1,7 @@
 (function(root){
     'use strict';
     function mount({container,invoiceId,draft,onConfirm}) {
+        draft=root.CompraSmartReceiptParser?.recoverReceiptDraft(draft)||draft;
         const doc=container.ownerDocument;
         container.innerHTML=`<form class="invoice-review-form">
             <p class="review-notice">El OCR puede equivocarse. Compara los datos con el archivo y confirma cada producto, presentación, marca y unidad antes de guardar.</p>
@@ -13,6 +14,7 @@
             </div>
             <p>Conserva la presentación en el nombre: «Aceite 1 L» y «Aceite 5 L» son productos diferentes. Una marca o unidad distinta también se registra por separado.</p>
             <div class="table-responsive"><table class="data-table review-items"><thead><tr><th>Producto / categoría</th><th>Cantidad</th><th>Unidad</th><th>Marca</th><th>Precio unitario</th><th>Importe de línea</th><th>Acción</th></tr></thead><tbody></tbody></table></div>
+            <p class="review-notice" data-review-empty hidden>No se reconocieron los productos. Completa la primera fila con los datos del comprobante; puedes añadir más productos debajo.</p>
             <button type="button" class="secondary-button" data-review-add>Añadir producto</button>
             <div class="review-fields">
               <label>Impuesto que falta añadir a las líneas<input name="tax_amount" type="number" min="0" max="1000000000" step="0.01" required></label>
@@ -21,6 +23,7 @@
             </div>
             <p>Si los importes de línea ya incluyen IGV, escribe 0 en el impuesto adicional. Confirma también el descuento: 0 cuando no corresponda. La suma debe coincidir con el total.</p>
             <p>El historial comparará el coste final por unidad, repartiendo proporcionalmente los impuestos adicionales y descuentos generales.</p>
+            <p data-review-totals role="status" aria-live="polite"></p>
             <ul class="review-warnings"></ul>
             <div role="status" aria-live="polite" class="invoice-upload-message" data-review-message></div>
             <button type="submit" class="primary-button">Confirmar y guardar compra</button>
@@ -38,20 +41,34 @@
             const el=doc.createElement('input');el.dataset.field=name;el.type=type;el.required=required;el.maxLength=maxLength;
             el.setAttribute('aria-label',name);if(min!==undefined)el.min=String(min);if(step)el.step=String(step);el.value=value??'';return el;
         }
+        function updateTotals() {
+            const summary=form.querySelector('[data-review-totals]');
+            const values=[...rows.querySelectorAll('[data-field=subtotal]')];
+            const complete=values.length&&values.every(el=>el.value!==''&&Number.isFinite(Number(el.value)))&&['tax_amount','discount_amount','total_amount'].every(name=>get(name).value!==''&&Number.isFinite(Number(get(name).value)));
+            if(!complete){summary.textContent='Completa los importes de los productos y los impuestos para comprobar la suma.';return;}
+            const subtotal=values.reduce((n,el)=>n+Number(el.value),0),calculated=subtotal+Number(get('tax_amount').value)-Number(get('discount_amount').value);
+            const matches=Math.abs(calculated-Number(get('total_amount').value))<=0.02;
+            summary.textContent=`Productos: ${subtotal.toFixed(2)} + impuesto: ${Number(get('tax_amount').value).toFixed(2)} − descuento: ${Number(get('discount_amount').value).toFixed(2)} = ${calculated.toFixed(2)} ${get('currency').value}. ${matches?'Coincide con el total.':'Revisa la diferencia con el total del comprobante.'}`;
+            summary.className=matches?'form-message success':'form-message error';
+        }
         function add(item={}) {
             const tr=doc.createElement('tr');
-            const fields=[input('description',item.description,{maxLength:300}),input('quantity',item.quantity,{type:'number',min:0.001,step:'any'}),input('unit',item.unit,{maxLength:50}),input('brand',item.brand,{required:false}),input('unit_price',item.unit_price,{type:'number',min:0,step:'any'}),input('subtotal',item.line_amount??item.subtotal,{type:'number',min:0,step:'0.01'})];
+            const fields=[input('description',item.description,{maxLength:300}),input('quantity',item.quantity,{type:'number',min:0.000001,step:'any'}),input('unit',item.unit,{maxLength:50}),input('brand',item.brand,{required:false}),input('unit_price',item.unit_price,{type:'number',min:0,step:'any'}),input('subtotal',item.line_amount??item.subtotal,{type:'number',min:0,step:'0.01'})];
             for(const el of fields){const td=doc.createElement('td');td.append(el);tr.append(td);}
             const category=input('category',item.category??'Otros',{required:false});category.placeholder='Categoría';tr.firstChild.append(category);
-            const td=doc.createElement('td'),remove=doc.createElement('button');remove.type='button';remove.textContent='Quitar';remove.className='supplier-action-button';remove.addEventListener('click',()=>tr.remove());td.append(remove);tr.append(td);rows.append(tr);
+            const td=doc.createElement('td'),remove=doc.createElement('button');remove.type='button';remove.textContent='Quitar';remove.className='supplier-action-button';remove.addEventListener('click',()=>{tr.remove();updateTotals();});td.append(remove);tr.append(td);rows.append(tr);
             const recalculate=()=>{
                 const quantity=fields[1].value,price=fields[4].value;
                 if(quantity!==''&&price!==''&&Number.isFinite(Number(quantity)*Number(price)))fields[5].value=(Number(quantity)*Number(price)).toFixed(2);
             };
             fields[1].addEventListener('input',recalculate);fields[4].addEventListener('input',recalculate);
+            return tr;
         }
         items.forEach(add);
-        form.querySelector('[data-review-add]').addEventListener('click',()=>{if(rows.rows.length<200)add({quantity:1});});
+        if(!items.length){add({quantity:1});form.querySelector('[data-review-empty]').hidden=false;}
+        form.querySelector('[data-review-add]').addEventListener('click',()=>{if(rows.rows.length<200){add({quantity:1}).querySelector('input').focus();updateTotals();}});
+        form.addEventListener('input',updateTotals);
+        updateTotals();
         for(const warning of draft.warnings||[]){const li=doc.createElement('li');li.textContent=warning;form.querySelector('ul').append(li);}
         form.querySelector('pre').textContent=draft.rawText||'';
         let busy=false,confirmed=false;

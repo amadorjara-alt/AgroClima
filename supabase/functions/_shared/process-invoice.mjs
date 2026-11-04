@@ -1,5 +1,6 @@
 import { readWithOCRSpace, OCRProviderError } from './ocr-space.mjs';
 import { decryptSecret } from './credentials.mjs';
+import { recoverReceiptDraft } from './receipt-parser.mjs';
 
 export function createInvoiceHandler({createClient, env, fetchImpl = fetch}) {
     const headers = {
@@ -40,7 +41,7 @@ export function createInvoiceHandler({createClient, env, fetchImpl = fetch}) {
             if (!path.startsWith(userId+'/'+row.business_id+'/')) return reply({success:false,error:'El archivo no corresponde al negocio del comprobante.'},400);
             if (row.confirmed_at) return reply({success:true,invoice_id:row.id,confirmed:true,cached:true,review_required:false});
             if (row.ocr_status==='review' && row.ocr_draft) {
-                return reply({success:true,invoice_id:row.id,cached:true,review_required:true,provider:'ocrspace',extracted:row.ocr_draft});
+                return reply({success:true,invoice_id:row.id,cached:true,review_required:true,provider:'ocrspace',extracted:recoverReceiptDraft(row.ocr_draft)});
             }
             admin=createClient(url,service,options);
             const {data:credential,error:credentialError}=await admin.from('integration_credentials')
@@ -58,7 +59,7 @@ export function createInvoiceHandler({createClient, env, fetchImpl = fetch}) {
                 return reply({success:false,error:busy?'Esta factura ya se está procesando. Espera un momento.':quota?'Se alcanzó el límite de escaneos del proyecto gratuito. Vuelve a intentarlo mañana.':'No se pudo iniciar el análisis del comprobante.',code:busy?'OCR_BUSY':quota?'OCR_QUOTA':'OCR_START_ERROR'},busy?409:quota?429:400);
             }
             if (claim.confirmed) return reply({success:true,invoice_id:row.id,confirmed:true,cached:true,review_required:false});
-            if (claim.cached) return reply({success:true,invoice_id:row.id,cached:true,review_required:true,provider:'ocrspace',extracted:claim.draft});
+            if (claim.cached) return reply({success:true,invoice_id:row.id,cached:true,review_required:true,provider:'ocrspace',extracted:recoverReceiptDraft(claim.draft)});
             requestId=claim.request_id;
             const {data:file,error:downloadError}=await caller.storage.from('invoices').download(path);
             if (downloadError || !file) throw new OCRProviderError('No se pudo leer el archivo privado del comprobante.',{status:422,code:'OCR_FILE_DOWNLOAD'});

@@ -48,3 +48,13 @@ La función `search-products` exige una sesión válida de Supabase. Utiliza el 
 Para contener llamadas repetidas hay caché de fuentes públicas durante cinco minutos, deduplicación de consultas en curso y un límite de cinco consultas nuevas por minuto y usuario en cada instancia de la función. Esta protección en memoria no sustituye los límites globales del proveedor.
 
 Documentación: https://docs.tavily.com/documentation/keyless y https://docs.tavily.com/documentation/api-reference/endpoint/search.
+
+## Confirmación de comprobantes SUNAT
+
+El lector reconoce tablas con columnas de cantidad, unidad, descripción y valor unitario de alta precisión. Distingue ICBPER del importe de producto. Cuando el comprobante no trae una columna de importe, calcula cantidad × valor unitario a dos decimales y lo señala para revisión. También reconoce series E001 y el rótulo Sub Total Ventas.
+
+**Revisar borrador** recupera las líneas desde el texto OCR ya guardado cuando un borrador anterior quedó sin productos. Las líneas existentes y las correcciones guardadas se conservan. La revisión utiliza el mismo módulo puro en navegador y servidor; la recuperación no llama de nuevo a OCR.space ni confirma compras automáticamente.
+
+El formulario muestra la suma de productos, impuesto adicional y descuento frente al total. Si la lectura sigue sin identificar productos, ofrece una fila vacía para completarla. El servidor mantiene los controles de propiedad, importes coherentes, duplicados e idempotencia.
+
+La migración `preserve_precise_purchase_values` amplía los tipos numéricos para conservar el valor unitario, las cantidades fraccionarias y las referencias históricas. No cambia los permisos ni las políticas RLS. Las fechas de emisión se muestran sin desplazarlas al día anterior por la zona horaria.

@@ -213,3 +213,16 @@ test('una sola búsqueda filtra las compras y muestra fuentes de Internet dentro
  input.value='';input.dispatchEvent(new w.Event('input'));assert.equal(d.getElementById('webSupplierResults').hidden,true);
  dom.window.close();
 });
+
+test('la fecha del comprobante conserva el día de emisión al mostrarse en Lima',async()=>{
+ const [html,analyticsCode,dashboardCode]=await Promise.all([source('dashboard.html'),source('js/purchase-analytics.js'),source('js/dashboard.js')]);
+ const {client}=clientFor({businesses:[fixtureBusiness],invoices:[{id:'date-qa',user_id:USER,business_id:BUSINESS,invoice_number:'QA-FECHA',issue_date:'2026-11-03',currency:'PEN',total_amount:20,ocr_status:'completed',created_at:new Date().toISOString()}]},new Map(),{});
+ const dom=new JSDOM(html,{url:'https://grupo.example/dashboard.html',runScripts:'outside-only',virtualConsole:new VirtualConsole()});
+ const w=dom.window,d=w.document,DateTimeFormat=w.Intl.DateTimeFormat;
+ w.Intl.DateTimeFormat=function(locale,options){return new DateTimeFormat(locale,{timeZone:'America/Lima',...options});};
+ w.scrollTo=()=>{};w.CompraSmart={getSupabaseClient:()=>client,showToast(){}};w.eval(analyticsCode);w.eval(dashboardCode);
+ await until(()=>d.getElementById('historyTableBody').textContent.includes('QA-FECHA'));
+ assert.match(d.querySelector('#historyTableBody tr td:nth-child(3)').textContent,/^03 /);
+ assert.match(d.querySelector('#invoicesTableBody tr td:nth-child(2)').textContent,/^03 /);
+ w.Intl.DateTimeFormat=DateTimeFormat;w.close();
+});

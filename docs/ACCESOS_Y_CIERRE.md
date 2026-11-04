@@ -71,3 +71,14 @@ Se restauran la barra lateral y sus etiquetas, ocultas por reglas CSS antiguas. 
 La búsqueda usa un solo campo para filtrar compras y consultar fuentes de Internet dentro del panel. La nueva función `search-products` mantiene `verify_jwt = true`, verifica además la identidad con Auth y llama al endpoint fijo de Tavily. No lee documentos privados ni requiere service_role. Valida la consulta, limita el tamaño del cuerpo, recorta los extractos, filtra enlaces inseguros y devuelve errores de cuota o conexión sin exponer respuestas privadas del proveedor. El acceso gratuito sin clave se probó con una consulta real de arroz; la pantalla se probó por separado con datos ficticios identificados como tales.
 
 Validación: 78 pruebas automatizadas, verificación de 10 archivos JS y revisión visual en marcos de 390 × 844, 844 × 390 y 1280 × 850. Las pruebas visuales no se conectan a Supabase ni modifican compras reales. La publicación del frontend debe confirmarse en GitHub Pages antes de anunciar la actualización como visible.
+
+
+## Corrección de confirmación SUNAT
+
+Se reconocen las columnas tabuladas de SUNAT, el valor unitario con más de dos decimales y la columna ICBPER. Los importes derivados de cantidad × valor unitario se señalan para revisión. Se recuperan borradores sin líneas desde su texto guardado y se conservan los que ya contienen productos. No hay nuevas llamadas al OCR para recuperar un borrador.
+
+El módulo puro compartido está en `supabase/functions/shared/receipt-parser.mjs`; la carpeta pública sin guion bajo permite cargarlo como módulo desde GitHub Pages. `_shared/receipt-parser.mjs` conserva los imports existentes del servidor. El formulario incluye comprobación visible de sumas y una fila editable cuando faltan productos. Los assets modificados llevan versión para actualizar la caché del navegador. La fecha de emisión conserva su día al mostrarse en Lima.
+
+La migración remota `20261104211500_preserve_precise_purchase_values.sql` amplía `invoice_items.unit_price` a numeric(20,10), `invoice_items.quantity` a numeric(18,6) y `price_history.unit_price` a numeric(24,4), manteniendo RLS. `supabase/tests/sunat-confirmation.sql` comprueba con datos ficticios la confirmación, precisión, idempotencia y rechazo de importes incoherentes, y termina con ROLLBACK. La confirmación real del usuario se deja al comerciante.
+
+Validación: 88 pruebas automatizadas, 11 archivos JS/MJS comprobados y recorrido visual desde un borrador antiguo sin productos hasta Compra guardada, con factura ficticia identificada y sin conexión a Supabase. Los fixtures del repositorio contienen datos inventados.
