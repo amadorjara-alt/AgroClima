@@ -23,6 +23,7 @@
 
     <!-- Estilos principales -->
     <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/history-reset.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 </head>
@@ -1193,7 +1194,7 @@
                         REGISTRO COMERCIAL
                     </span>
 
-                    <h2>Historial de compras</h2>
+                    <h2 id="historyTitle" tabindex="-1">Historial de compras</h2>
 
                     <p>
                         Consulta los comprobantes y movimientos
@@ -1201,7 +1202,17 @@
                     </p>
                 </div>
 
+                <button type="button" id="resetHistoryButton"
+                    class="secondary-button history-reset-button" disabled>
+                    <span aria-hidden="true">↺</span> Reiniciar historial
+                </button>
+
             </div>
+
+            <p id="historyResetNotice" class="form-message" role="status" aria-live="polite"></p>
+            <button type="button" id="cleanupHistoryFilesButton" class="secondary-button" hidden>
+                Completar limpieza de archivos
+            </button>
 
             <div class="metrics-grid">
 
@@ -1252,17 +1263,18 @@
 
                         <thead>
                             <tr>
-                                <th>Fecha</th>
                                 <th>Comprobante</th>
                                 <th>Proveedor</th>
+                                <th>Fecha</th>
                                 <th>Total</th>
+                                <th>Estado</th>
                             </tr>
                         </thead>
 
                         <tbody id="historyTableBody">
 
                             <tr>
-                                <td colspan="4">
+                                <td colspan="5">
                                     No hay movimientos disponibles.
                                 </td>
                             </tr>
@@ -1669,10 +1681,29 @@
      ARCHIVOS JAVASCRIPT DEL PROYECTO
 =========================================== -->
 
+<dialog id="resetHistoryDialog" class="history-reset-dialog"
+    aria-labelledby="resetHistoryTitle" aria-describedby="resetHistorySummary resetHistoryConsequences">
+    <form id="resetHistoryForm">
+        <span class="section-eyebrow">HISTORIAL DEL NEGOCIO</span>
+        <h2 id="resetHistoryTitle">¿Reiniciar el historial?</h2>
+        <p id="resetHistorySummary"></p>
+        <p id="resetHistoryConsequences">Esta acción es definitiva. Conservarás tu cuenta, el negocio, los productos, los proveedores y las claves de tus servicios.</p>
+        <label for="resetHistoryConfirmation">Escribe <strong>ELIMINAR</strong> para confirmar.</label>
+        <input id="resetHistoryConfirmation" name="confirmation" type="text"
+            autocomplete="off" spellcheck="false" required pattern="ELIMINAR">
+        <p id="resetHistoryMessage" class="form-message error" role="status" aria-live="polite"></p>
+        <div class="history-reset-actions">
+            <button type="button" id="cancelResetHistoryButton" class="secondary-button" autofocus>Cancelar</button>
+            <button type="submit" id="confirmResetHistoryButton" class="history-reset-confirm" disabled>Eliminar y reiniciar</button>
+        </div>
+    </form>
+</dialog>
+
 <script src="js/supabase.js" defer></script>
 <script src="js/main.js" defer></script>
 <script src="js/purchase-analytics.js" defer></script>
 <script src="js/invoice-review.js" defer></script>
+<script src="js/history-reset.js" defer></script>
 <script src="js/dashboard.js" defer></script>
 
 </body>

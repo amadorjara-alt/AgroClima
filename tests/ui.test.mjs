@@ -91,7 +91,7 @@ test('la clave compartida del proyecto se muestra configurada sin exigir otra cl
  assert.equal(d.getElementById('deleteIntegration').hidden,true);assert.equal(p.calls.some(c=>c.body.action==='save'),false);p.dom.window.close();
 });
 test('el dashboard muestra monedas separadas y tres gráficos con datos simulados identificados',async()=>{
- const html=await source('dashboard.html'),analyticsCode=await source('js/purchase-analytics.js'),dashboardCode=await source('js/dashboard.js');
+ const html=await source('dashboard.html'),analyticsCode=await source('js/purchase-analytics.js'),resetCode=await source('js/history-reset.js'),dashboardCode=await source('js/dashboard.js');
  const now=new Date().toISOString();
  const invoiceDay=analytics.dayKey(new Date());
  const rows=[
@@ -109,6 +109,7 @@ test('el dashboard muestra monedas separadas y tres gráficos con datos simulado
  dom.window.CompraSmart={getSupabaseClient:()=>client,showToast:(message,type)=>messages.push({message,type})};
  dom.window.Chart=class{constructor(_canvas,config){charts.push(config);}destroy(){}};
  dom.window.eval(analyticsCode);
+ dom.window.eval(resetCode);
  dom.window.eval(dashboardCode);
  await until(()=>(charts.length===3&&dom.window.document.getElementById('ocrspaceIntegrationStatus').textContent.includes('Clave guardada'))||messages.some(x=>x.type==='error')).catch(()=>{throw Error(JSON.stringify({errors,messages,charts:charts.length}));});
  assert.deepEqual(messages.filter(x=>x.type==='error'),[]);
@@ -126,4 +127,36 @@ test('el dashboard muestra monedas separadas y tres gráficos con datos simulado
  dom.window.scrollTo=()=>{};dom.window.document.querySelector('[data-view="integrations"]').click();
  assert.equal(dom.window.document.getElementById('pageTitle').textContent,'Integraciones');
  dom.window.close();
+});
+
+test('reiniciar desde el dashboard actualiza facturas, historial, importes y comparaciones',async()=>{
+ const [analyticsCode,resetCode,dashboardCode]=await Promise.all([source('js/purchase-analytics.js'),source('js/history-reset.js'),source('js/dashboard.js')]);
+ const now=new Date().toISOString(),tables={businesses:[fixtureBusiness],suppliers:[],products:[],price_history:[],
+  invoices:[{id:'fixture-invoice',user_id:USER,business_id:BUSINESS,total_amount:118,currency:'PEN',ocr_status:'completed',created_at:now},
+   {id:'other-business-invoice',user_id:USER,business_id:'other-business',total_amount:999,currency:'PEN',ocr_status:'completed',created_at:now}]};
+ const {client,calls}=clientFor(tables,new Map(),{ocrspace:{configured:true,source:'project'}});
+ client.rpc=async(name,args)=>{
+  calls.push({name,args});assert.equal(name,'reset_purchase_history');assert.equal(args.p_business_id,BUSINESS);
+  assert.deepEqual(Array.from(args.p_invoice_ids),['fixture-invoice']);
+  tables.invoices=tables.invoices.filter(row=>!args.p_invoice_ids.includes(row.id));
+  return{data:{success:true,deleted_invoices:1}};
+ };
+ const messages=[],dom=new JSDOM(await source('dashboard.html'),{url:'https://grupo.example/dashboard.html',runScripts:'outside-only',virtualConsole:new VirtualConsole()});
+ const d=dom.window.document,dialog=d.getElementById('resetHistoryDialog');
+ dialog.showModal=()=>dialog.setAttribute('open','');dialog.close=()=>dialog.removeAttribute('open');
+ dom.window.CompraSmart={getSupabaseClient:()=>client,showToast:(message,type)=>messages.push({message,type})};
+ dom.window.eval(analyticsCode);dom.window.eval(resetCode);dom.window.eval(dashboardCode);
+ await until(()=>d.getElementById('historyPurchaseCount').textContent==='1'&&!d.getElementById('resetHistoryButton').disabled);
+ d.getElementById('resetHistoryButton').click();d.getElementById('resetHistoryConfirmation').value='ELIMINAR';
+ d.getElementById('resetHistoryConfirmation').dispatchEvent(new dom.window.Event('input'));
+ d.getElementById('resetHistoryForm').dispatchEvent(new dom.window.Event('submit',{bubbles:true,cancelable:true}));
+ await until(()=>d.getElementById('historyResetNotice').textContent.includes('Historial reiniciado'));
+ assert.equal(d.getElementById('historyPurchaseCount').textContent,'0');
+ assert.doesNotMatch(d.getElementById('overviewPurchaseTotal').textContent,/118|999/);
+ assert.match(d.getElementById('invoicesTableBody').textContent,/Todavía no hay facturas/);
+ assert.match(d.getElementById('historyTableBody').textContent,/Todavía no hay compras/);
+ assert.match(d.getElementById('comparisonResults').textContent,/Aún no hay precios comparables/);
+ assert.equal(tables.invoices.length,1);assert.equal(tables.invoices[0].business_id,'other-business');
+ assert.equal(d.querySelectorAll('#historyTable thead th').length,5);
+ assert.deepEqual(messages.filter(item=>item.type==='error'),[]);dom.window.close();
 });
