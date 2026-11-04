@@ -7,7 +7,7 @@ Referencia: «Rubrica Pract Laboratorio 2 SI (1).pdf», entregada por el grupo. 
 | Criterio | Puntos | Evidencia que debe mostrar cada integrante | Estado real |
 | --- | ---: | --- | --- |
 | Identificación del problema | 3 | Problema, usuario beneficiado y valor aportado. | Explicación preparada abajo. |
-| Funcionamiento de la solución | 4 | Entrar, cargar un comprobante, procesarlo, revisar sus datos, guardar y recuperar la información. | Funciones desplegadas y guardado probado en la base real; falta el recorrido interactivo con la clave OCR del grupo. |
+| Funcionamiento de la solución | 4 | Entrar, cargar un comprobante, procesarlo, revisar sus datos, guardar y recuperar la información. | Funciones desplegadas, guardado probado y registros operativos de OCR observados en el proyecto; cada integrante debe repetir la demostración. |
 | Comprensión e integración tecnológica | 6 | Mostrar qué envía el navegador, qué ejecuta el servidor, dónde se guarda y cómo responde la API. | OCR.space conectado a process-invoice; explicar borrador, reserva de intentos, confirmación transaccional e historial. |
 | Autenticación | 3 | Login real con una cuenta, persistencia y cierre de sesión. Explicar por qué una contraseña incorrecta no permite entrar. | Código existente revisado y pruebas locales de flujo; falta validación con cuentas reales del proyecto. |
 | Sustentación y dominio | 4 | Explicar decisiones, límites, errores y participación de la IA. | Preguntas y respuestas preparadas abajo. |

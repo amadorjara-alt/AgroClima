@@ -38,6 +38,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let purchaseEvolutionChart = null;
     let categoryDistributionChart = null;
     let invoiceStatusChart = null;
+    let checkingIntegrations = false;
 
     const state = {
         initialized: false,
@@ -316,6 +317,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
 
         target.classList.add("active");
+        if ($("pageTitle")) $("pageTitle").textContent = target.querySelector("h2")?.textContent.trim() || "CompraSmart AI";
+        if (viewName === "integrations" && state.initialized) loadIntegrationStatus();
 
         navigationButtons.forEach(button => {
 
@@ -1210,7 +1213,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const { data, error } = await supabase
             .from("invoices")
             .select(
-                "id, invoice_number, issue_date, total_amount, currency, file_path, ocr_status, created_at, confirmed_at"
+                "id, invoice_number, issue_date, total_amount, currency, file_path, ocr_status, created_at, confirmed_at, ocr_provider, processed_at"
             )
             .eq("user_id", currentUser.id)
             .eq("business_id", currentBusiness.id)
@@ -1221,6 +1224,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         invoices = data || [];
 
         renderInvoices();
+        renderIntegrationHistory();
 
     }
 
@@ -2151,8 +2155,44 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     // ========================================================
-    // 14. CONFIGURACIÓN DEL NEGOCIO
+    // 14. ESTADO DE INTEGRACIONES Y CONFIGURACIÓN DEL NEGOCIO
     // ========================================================
+
+    function integrationLabel(id,text,success=false) {
+        const element=$(id);
+        if(element){element.textContent=text;element.className=success?'status-success':'status-pending';}
+    }
+    function renderIntegrationHistory() {
+        const reads=invoices.filter(row=>row.ocr_provider==='ocrspace'&&row.processed_at);
+        integrationLabel('ocrIntegrationStatus',reads.length
+            ? `${reads.length} comprobante(s) con lectura guardada; revisa su estado en Facturas`
+            : 'Todavía sin lecturas de OCR.space. Sube una factura para comprobarla.',reads.length>0);
+    }
+    async function loadIntegrationStatus() {
+        if(checkingIntegrations||!currentUser||!currentBusiness)return;
+        checkingIntegrations=true;
+        // initializeUser ya verificó Auth y consultó el negocio con RLS.
+        integrationLabel('supabaseIntegrationStatus','Conectado · sesión y negocio consultados',true);
+        integrationLabel('ocrspaceIntegrationStatus','Consultando configuración de la clave');
+        renderIntegrationHistory();
+        try {
+            const {data:session,error:sessionError}=await supabase.auth.getSession();
+            if(sessionError)throw sessionError;
+            const token=session?.session?.access_token;
+            if(!token)throw new Error('Sesión no disponible.');
+            const {data,error}=await supabase.functions.invoke('manage-integration',{body:{action:'list'},headers:{Authorization:`Bearer ${token}`}});
+            if(error||!data?.success)throw new Error('No se pudo consultar la configuración.');
+            const saved=Array.isArray(data.integrations)?data.integrations:[];
+            const personal=saved.some(row=>row.provider==='ocrspace');
+            const configured=personal||data.services?.ocrspace?.configured===true;
+            const source=personal?'tu cuenta':'los secretos del proyecto';
+            integrationLabel('ocrspaceIntegrationStatus',configured
+                ? `Clave guardada en ${source} · prueba el OCR subiendo una factura`
+                : 'Falta configurar OCR_SPACE_API_KEY en Supabase o guardar una clave en Integraciones');
+        } catch {
+            integrationLabel('ocrspaceIntegrationStatus','No se pudo consultar la clave. Abre Administrar integraciones o vuelve a esta sección para reintentar.');
+        } finally {checkingIntegrations=false;}
+    }
 
     // Los IDs deben coincidir exactamente con dashboard.html.
     const settingsForm = $("businessSettingsForm");
@@ -2283,7 +2323,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         await Promise.all([
             loadDashboardMetrics(),
             loadHistory(),
-            loadPriceHistory()
+            loadPriceHistory(),
+            loadIntegrationStatus()
         ]);
 
         state.initialized = true;

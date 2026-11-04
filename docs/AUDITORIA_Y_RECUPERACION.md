@@ -32,7 +32,7 @@ Las facturas antiguas se conservan tal como estaban. No se les inventan producto
 
 ## OCR y datos
 
-process-invoice versión 7 y manage-integration versión 2 están desplegadas y activas, con verify_jwt habilitado. El servidor también valida la identidad con Supabase Auth y consulta exclusivamente documentos del usuario y negocio autorizados. Sin sesión, ambos endpoints devolvieron HTTP 401.
+process-invoice versión 7 y manage-integration versión 4 están desplegadas y activas, con verify_jwt habilitado. El servidor también valida la identidad con Supabase Auth y consulta exclusivamente documentos del usuario y negocio autorizados. Sin sesión, ambos endpoints devolvieron HTTP 401.
 
 OCR.space recibe un archivo privado por POST y devuelve texto. La aplicación usa el motor 2, valida tamaño, formato y firma del archivo, maneja timeout, errores de cuota y lectura parcial. Las reglas extraen solo lo reconocible; no son un LLM ni garantizan comprender todos los diseños de comprobantes.
 
@@ -46,7 +46,7 @@ El plan Free de OCR.space consultado publica 25.000 solicitudes/mes, 500/día po
 
 ## Pruebas y límites de la evidencia
 
-- 55 pruebas automáticas de cálculos, cifrado, parser, adaptador, Auth, permisos del handler y comportamiento DOM. Los clientes de Supabase y Chart.js de estas pruebas son simulados.
+- 58 pruebas automáticas de cálculos, cifrado, parser, adaptador, Auth, permisos del handler y comportamiento DOM. Los clientes de Supabase y Chart.js de estas pruebas son simulados.
 - Comprobación de sintaxis de ocho archivos JavaScript y empaquetado de ambas funciones TypeScript con sus dependencias locales.
 - Llamada real a OCR.space con la clave pública documentada de demostración y un comprobante ficticio: dos productos, total 118, sin lectura parcial y con revisión requerida. No se guardó esa clave en producción.
 - supabase/tests/purchases-rls.sql pasó en la base real con dos identidades: aislamiento, rechazo de enlaces ajenos, bóveda inaccesible al cliente, confirmación, coste final, idempotencia, duplicados y rechazo sin datos parciales.
@@ -66,7 +66,7 @@ Se corrigieron los índices faltantes de las relaciones utilizadas. Persisten av
 
 | Área | Pendiente |
 | --- | --- |
-| OCR del grupo | Introducir una clave gratuita válida y hacer la prueba completa desde la web. |
+| OCR del grupo | Documentar la demostración individual desde la web; ya se observaron lecturas de OCR.space y una compra confirmada en el proyecto. |
 | Auth y correo | Probar registro, confirmación, recuperación y cierre de sesión con las cuentas del grupo; revisar sus URL permitidas. |
 | Google Login | Crear cliente OAuth web, configurarlo en Supabase y comprobar el flujo. Es independiente del OCR. |
 | Proveedores opcionales | Las configuraciones anteriores se conservan; no se afirma conexión verificada ni procesamiento con ellas. |
@@ -77,3 +77,9 @@ Se corrigieron los índices faltantes de las relaciones utilizadas. Persisten av
 | Perfil, privacidad y términos | Se conserva lo existente; quedan ampliaciones del perfil y consentimiento versionado. No se declara cumplimiento legal certificado. |
 
 La guía RUBRICA_Y_SUSTENTACION.md distingue la evidencia ejecutada de lo que cada integrante aún debe demostrar. No se garantiza una nota ni se presenta una simulación como una prueba real.
+
+## Estado visible de integraciones
+
+Se sustituyó la tarjeta antigua de Gemini en el dashboard por OCR.space. El servidor informa únicamente si existe una clave personal o del proyecto, sin devolver su valor. La interfaz distingue configuración de clave, conexión al negocio y lecturas guardadas; guardar una clave no se presenta como una llamada verificada al proveedor. También se actualiza el título de la sección seleccionada.
+
+En la comprobación posterior del proyecto se observaron 2 documentos con lectura de OCR.space y 1 compra confirmada. Es evidencia de registros operativos del grupo; no se atribuye a una prueba interactiva ejecutada por el asistente. Los recuentos anteriores corresponden al cierre de las pruebas con reversión.
