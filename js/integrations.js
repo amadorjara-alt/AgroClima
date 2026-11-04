@@ -1,8 +1,7 @@
-
 /* ============================================================
    COMPRASMART AI
    Archivo: js/integrations.js
-   Centro de integraciones y gestión segura de proveedores
+   Centro de integraciones y gestión de proveedores
    ============================================================ */
 
 "use strict";
@@ -14,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ========================================================
 
     const app = window.CompraSmart || null;
+
     const $ = id => document.getElementById(id);
 
     const elements = {
@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
         profileBusinessName: $("profileBusinessName")
     };
 
+    // Elementos indispensables para el funcionamiento.
     const requiredElements = [
         "modal",
         "form",
@@ -50,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
         key => !elements[key]
     );
 
-    if (missingElements.length) {
+    if (missingElements.length > 0) {
         console.error(
             "CompraSmart AI: faltan elementos HTML:",
             missingElements
@@ -60,27 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ========================================================
-    // 2. CLIENTE SUPABASE
-    // ========================================================
-
-    function getSupabaseClient() {
-
-        // Primera opción: cliente global.
-        if (window.supabaseClient) {
-            return window.supabaseClient;
-        }
-
-        // Segunda opción: cliente proporcionado por la aplicación.
-        if (app && typeof app.getSupabaseClient === "function") {
-            return app.getSupabaseClient();
-        }
-
-        return null;
-    }
-
-
-    // ========================================================
-    // 3. PROVEEDORES
+    // 2. PROVEEDORES
     // ========================================================
 
     const providers = Object.freeze({
@@ -115,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ========================================================
-    // 4. ESTADOS
+    // 3. ESTADOS
     // ========================================================
 
     const integrationStates = {};
@@ -126,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ========================================================
-    // 5. ESTADÍSTICAS
+    // 4. ESTADÍSTICAS
     // ========================================================
 
     const stats = {
@@ -159,12 +140,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ========================================================
-    // 6. NOTIFICACIONES
+    // 5. NOTIFICACIONES
     // ========================================================
 
     function notify(message, type = "info") {
 
-        if (app && typeof app.showToast === "function") {
+        if (
+            app &&
+            typeof app.showToast === "function"
+        ) {
             app.showToast(message, type);
         } else {
             console.info("CompraSmart AI:", message);
@@ -173,7 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ========================================================
-    // 7. MENSAJES
+    // 6. MENSAJES DEL MODAL
     // ========================================================
 
     function showModalMessage(message, type = "info") {
@@ -190,6 +174,8 @@ document.addEventListener("DOMContentLoaded", () => {
             : "info";
 
         elements.message.textContent = message;
+
+        // Conservamos la clase original del HTML.
         elements.message.className =
             `integration-message ${selectedType}`;
 
@@ -204,13 +190,14 @@ document.addEventListener("DOMContentLoaded", () => {
     function clearModalMessage() {
 
         elements.message.textContent = "";
+
         elements.message.className =
             "integration-message hidden";
     }
 
 
     // ========================================================
-    // 8. ESTADOS DE LOS PROVEEDORES
+    // 7. ESTADOS DE PROVEEDORES
     // ========================================================
 
     function updateProviderStatus(
@@ -220,6 +207,10 @@ document.addEventListener("DOMContentLoaded", () => {
     ) {
 
         if (!providers[providerId]) {
+            console.warn(
+                "CompraSmart AI: proveedor desconocido:",
+                providerId
+            );
             return false;
         }
 
@@ -233,30 +224,39 @@ document.addEventListener("DOMContentLoaded", () => {
             return false;
         }
 
-        // Actualizar primero el estado interno.
-        integrationStates[providerId] = state;
-
         const statusElement = $(`status-${providerId}`);
 
-        if (statusElement) {
+        if (!statusElement) {
+            console.warn(
+                `No se encontró status-${providerId} en el HTML.`
+            );
+            return false;
+        }
 
-            statusElement.className = "status";
+        integrationStates[providerId] = state;
 
-            if (state === "verified") {
-                statusElement.classList.add("verified");
-                statusElement.textContent =
-                    message || "Conexión verificada";
+        statusElement.className = "status";
 
-            } else if (state === "error") {
-                statusElement.classList.add("error");
-                statusElement.textContent =
-                    message || "Error de conexión";
+        if (state === "verified") {
 
-            } else {
-                statusElement.classList.add("pending");
-                statusElement.textContent =
-                    message || "Pendiente de configuración";
-            }
+            statusElement.classList.add("verified");
+
+            statusElement.textContent =
+                message || "Conexión verificada";
+
+        } else if (state === "error") {
+
+            statusElement.classList.add("error");
+
+            statusElement.textContent =
+                message || "Error de conexión";
+
+        } else {
+
+            statusElement.classList.add("pending");
+
+            statusElement.textContent =
+                message || "Pendiente de configuración";
         }
 
         updateStatistics();
@@ -266,7 +266,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ========================================================
-    // 9. MODAL
+    // 8. MODAL
     // ========================================================
 
     let previousFocusedElement = null;
@@ -282,9 +282,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         previousFocusedElement = document.activeElement;
-        previousBodyOverflow = document.body.style.overflow;
+
+        previousBodyOverflow =
+            document.body.style.overflow;
 
         elements.form.reset();
+
         clearModalMessage();
 
         if (elements.modalTitle) {
@@ -305,6 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
         elements.apiKey.type = "password";
 
         if (elements.toggleKey) {
+
             elements.toggleKey.setAttribute(
                 "aria-pressed",
                 "false"
@@ -324,7 +328,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         elements.modal.classList.remove("hidden");
-        elements.modal.setAttribute("aria-hidden", "false");
+
+        elements.modal.setAttribute(
+            "aria-hidden",
+            "false"
+        );
 
         document.body.style.overflow = "hidden";
 
@@ -333,17 +341,24 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+
     function closeModal() {
 
         elements.modal.classList.add("hidden");
-        elements.modal.setAttribute("aria-hidden", "true");
+
+        elements.modal.setAttribute(
+            "aria-hidden",
+            "true"
+        );
 
         elements.form.reset();
+
         clearModalMessage();
 
         elements.apiKey.type = "password";
 
-        document.body.style.overflow = previousBodyOverflow;
+        document.body.style.overflow =
+            previousBodyOverflow;
 
         if (elements.toggleKey) {
             elements.toggleKey.setAttribute(
@@ -364,7 +379,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ========================================================
-    // 10. EVENTOS DE PROVEEDORES
+    // 9. EVENTOS DE PROVEEDORES
     // ========================================================
 
     document.querySelectorAll("[data-integration]")
@@ -378,7 +393,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ========================================================
-    // 11. CERRAR MODAL
+    // 10. CERRAR MODAL
     // ========================================================
 
     elements.closeButton?.addEventListener(
@@ -398,41 +413,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ========================================================
-    // 12. MOSTRAR / OCULTAR CLAVE
+    // 11. MOSTRAR / OCULTAR CLAVE
     // ========================================================
 
-    elements.toggleKey?.addEventListener("click", () => {
+    elements.toggleKey?.addEventListener(
+        "click",
+        () => {
 
-        const visible = elements.apiKey.type === "text";
+            const visible =
+                elements.apiKey.type === "text";
 
-        elements.apiKey.type = visible ? "password" : "text";
+            elements.apiKey.type = visible
+                ? "password"
+                : "text";
 
-        elements.toggleKey.setAttribute(
-            "aria-pressed",
-            String(!visible)
-        );
+            elements.toggleKey.setAttribute(
+                "aria-pressed",
+                String(!visible)
+            );
 
-        elements.toggleKey.setAttribute(
-            "aria-label",
-            visible ? "Mostrar clave API" : "Ocultar clave API"
-        );
+            elements.toggleKey.setAttribute(
+                "aria-label",
+                visible
+                    ? "Mostrar clave API"
+                    : "Ocultar clave API"
+            );
 
-        const icon = elements.toggleKey.querySelector("i");
+            const icon =
+                elements.toggleKey.querySelector("i");
 
-        if (icon) {
-            icon.classList.toggle("fa-eye", visible);
-            icon.classList.toggle("fa-eye-slash", !visible);
+            if (icon) {
+                icon.classList.toggle("fa-eye", visible);
+                icon.classList.toggle("fa-eye-slash", !visible);
+            }
         }
-    });
+    );
 
 
     // ========================================================
-    // 13. VALIDACIÓN
+    // 12. VALIDAR FORMULARIO
     // ========================================================
 
     function validateForm() {
 
         const providerId = elements.provider.value;
+
         const apiKey = elements.apiKey.value.trim();
 
         if (!providers[providerId]) {
@@ -456,300 +481,142 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ========================================================
-    // 14. COMUNICACIÓN CON LA BÓVEDA SEGURA
+    // 13. ENVIAR FORMULARIO
     // ========================================================
 
+    elements.form.addEventListener(
+        "submit",
+        event => {
+
+            event.preventDefault();
+
+            clearModalMessage();
+
+            const validationError = validateForm();
+
+            if (validationError) {
+                showModalMessage(
+                    validationError,
+                    "error"
+                );
+                return;
+            }
+
+            saveIntegrationSecurely().catch(error => {
+                console.error("CompraSmart AI: error al guardar integración:", error);
+                showModalMessage(
+                    error.message || "No se pudo guardar la integración. Verifica la configuración del servidor.",
+                    "error"
+                );
+                notify("No se pudo guardar la clave API.", "error");
+            });
+        }
+    );
+
+
+
+
+    // ========================================================
+    // 14. ALMACENAMIENTO SEGURO EN SUPABASE EDGE FUNCTION
+    // ========================================================
+
+    function getSupabaseClient() {
+        if (window.supabaseClient) return window.supabaseClient;
+        if (typeof app?.getSupabaseClient === "function") {
+            return app.getSupabaseClient();
+        }
+        return null;
+    }
+
     async function invokeCredentialVault(payload) {
-
         const client = getSupabaseClient();
-
-        if (!client?.auth || !client?.functions?.invoke) {
-            throw new Error(
-                "Supabase no está inicializado correctamente."
-            );
+        if (!client?.functions?.invoke || !client?.auth?.getSession) {
+            throw new Error("Supabase no está inicializado. Recarga la página e inicia sesión.");
         }
 
-        // Recuperar la sesión actual.
         const { data: sessionData, error: sessionError } =
             await client.auth.getSession();
+        if (sessionError) throw sessionError;
 
-        if (sessionError) {
-            throw new Error(
-                "No se pudo recuperar tu sesión de usuario."
-            );
+        const accessToken = sessionData?.session?.access_token;
+        if (!accessToken) {
+            throw new Error("Tu sesión no está activa. Inicia sesión nuevamente.");
         }
 
-        const session = sessionData?.session;
-
-        if (!session?.access_token) {
-            throw new Error(
-                "No hay una sesión activa. Inicia sesión nuevamente."
-            );
-        }
-
-        // Enviar la operación al servidor.
         const { data, error } = await client.functions.invoke(
             "manage-integration",
             {
                 body: payload,
-                headers: {
-                    Authorization: `Bearer ${session.access_token}`
-                }
+                headers: { Authorization: `Bearer ${accessToken}` }
             }
         );
 
         if (error) {
-
-            let detail =
-                error.message ||
-                "Error al comunicarse con el servidor seguro.";
-
-            try {
-                if (error.context?.json) {
-                    const responseBody = await error.context.json();
-
-                    if (responseBody?.error) {
-                        detail = responseBody.error;
+            let detail = error.message || "Error al comunicarse con el servidor seguro.";
+            const context = error.context;
+            if (context && typeof context.clone === "function") {
+                try {
+                    const body = await context.clone().json();
+                    if (body?.error || body?.message) {
+                        detail = body.error || body.message;
                     }
-                }
-            } catch (_) {
-                // Mantener el mensaje original.
+                } catch { /* conservar mensaje original */ }
+                if (context.status) detail = `HTTP ${context.status}: ${detail}`;
             }
-
             throw new Error(detail);
         }
 
         if (!data?.success) {
-            throw new Error(
-                data?.error ||
-                "El servidor no confirmó la operación."
-            );
+            throw new Error(data?.error || "El servidor no confirmó la operación.");
         }
-
         return data;
     }
 
-
-    // ========================================================
-    // 15. RECUPERAR INTEGRACIONES GUARDADAS
-    // ========================================================
-
-    let loadingIntegrations = false;
-
-    async function loadSavedIntegrations() {
-
-        if (loadingIntegrations) {
-            return;
-        }
-
-        loadingIntegrations = true;
-
-        try {
-
-            const result = await invokeCredentialVault({
-                action: "list"
-            });
-
-            const saved = Array.isArray(result.integrations)
-                ? result.integrations
-                : [];
-
-            // Identificar los proveedores guardados.
-            const savedProviders = new Set(
-                saved.map(item => item.provider)
-            );
-
-            Object.keys(providers).forEach(providerId => {
-
-                if (savedProviders.has(providerId)) {
-
-                    updateProviderStatus(
-                        providerId,
-                        "verified",
-                        "Guardada de forma segura"
-                    );
-
-                } else {
-
-                    updateProviderStatus(
-                        providerId,
-                        "pending",
-                        "Pendiente de configuración"
-                    );
-                }
-            });
-
-            console.info(
-                "CompraSmart AI: integraciones recuperadas:",
-                saved.length
-            );
-
-        } catch (error) {
-
-            console.error(
-                "CompraSmart AI: error al recuperar integraciones:",
-                error
-            );
-
-            Object.keys(providers).forEach(providerId => {
-                updateProviderStatus(
-                    providerId,
-                    "pending",
-                    "No se pudo verificar"
-                );
-            });
-
-            notify(
-                error.message || "No se pudieron recuperar las integraciones.",
-                "error"
-            );
-
-        } finally {
-            loadingIntegrations = false;
-        }
-    }
-
-
-    // ========================================================
-    // 16. GUARDAR INTEGRACIÓN
-    // ========================================================
-
     async function saveIntegrationSecurely() {
-
         const providerId = elements.provider.value;
         const apiKey = elements.apiKey.value.trim();
-
-        const model = elements.model?.value.trim() ||
-            providers[providerId].model;
+        const model = elements.model?.value.trim() || providers[providerId].model;
 
         elements.saveButton.disabled = true;
-
         const originalButton = elements.saveButton.innerHTML;
-
-        elements.saveButton.innerHTML =
-            '<i class="fa-solid fa-spinner fa-spin"></i> Guardando…';
-
-        showModalMessage(
-            "Enviando la credencial al servidor seguro…",
-            "info"
-        );
+        elements.saveButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando…';
+        showModalMessage("Enviando la credencial al servidor mediante una conexión segura…", "info");
 
         try {
-
-            await invokeCredentialVault({
-                action: "save",
-                provider: providerId,
-                apiKey,
-                model
-            });
-
-            // Borrar la clave del formulario.
+            await invokeCredentialVault({ action: "save", provider: providerId, apiKey, model });
             elements.apiKey.value = "";
-
-            // Actualizar el estado visual.
-            updateProviderStatus(
-                providerId,
-                "verified",
-                "Guardada de forma segura"
-            );
-
-            showModalMessage(
-                "La credencial se guardó cifrada en Supabase.",
-                "success"
-            );
-
-            notify(
-                `${providers[providerId].name}: credencial guardada.`,
-                "success"
-            );
-
-            // Volver a consultar el servidor para confirmar.
-            await loadSavedIntegrations();
-
+            updateProviderStatus(providerId, "verified", "Guardada de forma segura");
+            showModalMessage("La clave se guardó cifrada en el servidor. No se conserva en este navegador.", "success");
+            notify(`${providers[providerId].name}: configuración guardada de forma segura.`, "success");
             window.setTimeout(closeModal, 1100);
-
         } finally {
-
             elements.saveButton.disabled = false;
             elements.saveButton.innerHTML = originalButton;
         }
     }
 
-
-    // ========================================================
-    // 17. ELIMINAR INTEGRACIÓN
-    // ========================================================
-
-    async function deleteIntegration(providerId) {
-
-        if (!providers[providerId]) {
-            throw new Error("Proveedor no válido.");
+    async function loadSavedIntegrations() {
+        try {
+            const result = await invokeCredentialVault({ action: "list" });
+            const saved = Array.isArray(result.integrations) ? result.integrations : [];
+            Object.keys(providers).forEach(id => {
+                const item = saved.find(entry => entry.provider === id);
+                updateProviderStatus(
+                    id,
+                    item ? "verified" : "pending",
+                    item ? "Guardada de forma segura" : "Pendiente de configuración"
+                );
+            });
+        } catch (error) {
+            console.warn("CompraSmart AI: no se pudieron cargar estados de integraciones:", error.message);
+            Object.keys(providers).forEach(id => updateProviderStatus(id, "pending", "Servidor seguro no configurado"));
         }
-
-        await invokeCredentialVault({
-            action: "delete",
-            provider: providerId
-        });
-
-        updateProviderStatus(
-            providerId,
-            "pending",
-            "Pendiente de configuración"
-        );
-
-        notify(
-            `${providers[providerId].name}: integración eliminada.`,
-            "success"
-        );
-
-        await loadSavedIntegrations();
     }
 
+    // La carga de estados se ejecuta después de establecer los estados iniciales.
 
     // ========================================================
-    // 18. ENVÍO DEL FORMULARIO
-    // ========================================================
-
-    elements.form.addEventListener("submit", async event => {
-
-        event.preventDefault();
-
-        clearModalMessage();
-
-        const validationError = validateForm();
-
-        if (validationError) {
-            showModalMessage(validationError, "error");
-            return;
-        }
-
-        try {
-
-            await saveIntegrationSecurely();
-
-        } catch (error) {
-
-            console.error(
-                "CompraSmart AI: error al guardar:",
-                error
-            );
-
-            showModalMessage(
-                error.message ||
-                "No se pudo guardar la integración.",
-                "error"
-            );
-
-            notify(
-                "No se pudo guardar la credencial.",
-                "error"
-            );
-        }
-    });
-
-
-    // ========================================================
-    // 19. MENÚ MÓVIL
+    // 15. MENÚ MÓVIL
     // ========================================================
 
     function closeMobileMenu() {
@@ -768,26 +635,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (elements.sidebar && elements.mobileButton) {
 
-        elements.mobileButton.addEventListener("click", () => {
+        elements.mobileButton.addEventListener(
+            "click",
+            () => {
 
-            const isOpen =
-                elements.sidebar.classList.toggle("open");
+                const isOpen =
+                    elements.sidebar.classList.toggle("open");
 
-            elements.mobileButton.setAttribute(
-                "aria-expanded",
-                String(isOpen)
-            );
-        });
+                elements.mobileButton.setAttribute(
+                    "aria-expanded",
+                    String(isOpen)
+                );
+            }
+        );
 
         elements.sidebar.querySelectorAll("a")
             .forEach(link => {
-                link.addEventListener("click", closeMobileMenu);
+                link.addEventListener(
+                    "click",
+                    closeMobileMenu
+                );
             });
     }
 
 
     // ========================================================
-    // 20. TECLA ESCAPE
+    // 15. TECLA ESCAPE
     // ========================================================
 
     document.addEventListener("keydown", event => {
@@ -805,45 +678,65 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ========================================================
-    // 21. PERFIL DE USUARIO
+    // 16. PERFIL DE USUARIO
     // ========================================================
 
     async function loadUserProfile() {
 
-        const client = getSupabaseClient();
+        if (
+            !app ||
+            typeof app.getSupabaseClient !== "function"
+        ) {
+            return;
+        }
 
-        if (!client?.auth) {
+        const client = app.getSupabaseClient();
+
+        if (!client || !client.auth) {
             return;
         }
 
         try {
 
-            const { data, error } = await client.auth.getUser();
+            const { data, error } =
+                await client.auth.getUser();
 
-            if (error || !data?.user) {
+            if (error || !data || !data.user) {
                 return;
             }
 
             const user = data.user;
             const metadata = user.user_metadata || {};
 
+            let business = null;
+            const { data: businessData, error: businessError } = await client
+                .from("businesses")
+                .select("business_name, owner_name")
+                .eq("user_id", user.id)
+                .limit(1)
+                .maybeSingle();
+
+            if (businessError) {
+                console.warn("No se pudo consultar el perfil comercial:", businessError.message);
+            } else {
+                business = businessData;
+            }
+
             const ownerName =
-                metadata.owner_name ||
-                metadata.full_name ||
-                metadata.name ||
-                user.email ||
-                "Mi cuenta";
+                business?.owner_name || metadata.owner_name ||
+                metadata.full_name || metadata.name || user.email || "Mi cuenta";
 
             const businessName =
-                metadata.business_name ||
-                "CompraSmart AI";
+                business?.business_name || metadata.business_name || "Mi negocio";
 
             if (elements.profileOwnerName) {
-                elements.profileOwnerName.textContent = ownerName;
+                elements.profileOwnerName.textContent =
+                    ownerName;
             }
 
             if (elements.profileBusinessName) {
-                elements.profileBusinessName.textContent = businessName;
+                elements.profileBusinessName.textContent =
+                    businessName;
             }
 
             if (elements.profileAvatar) {
@@ -862,7 +755,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ========================================================
-    // 22. INICIALIZACIÓN
+    // 17. INICIALIZACIÓN
     // ========================================================
 
     Object.keys(providers).forEach(providerId => {
@@ -870,48 +763,31 @@ document.addEventListener("DOMContentLoaded", () => {
         updateProviderStatus(
             providerId,
             "pending",
-            "Consultando servidor seguro…"
+            "Pendiente de configuración"
         );
     });
 
     updateStatistics();
 
-    // Recuperar los datos después de inicializar los estados.
-    loadUserProfile();
+    // Consultar el estado guardado una vez que los valores iniciales ya existen.
     loadSavedIntegrations();
+    loadUserProfile();
 
-
-    // Actualizar integraciones cuando cambie la sesión.
-    const client = getSupabaseClient();
-
-    if (client?.auth?.onAuthStateChange) {
-
-        client.auth.onAuthStateChange(event => {
-
-            if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-                // Evitar ejecutar operaciones asíncronas dentro del callback.
-                window.setTimeout(() => {
-                    loadSavedIntegrations();
-                    loadUserProfile();
-                }, 0);
-            }
-
-            if (event === "SIGNED_OUT") {
-
-                Object.keys(providers).forEach(providerId => {
-                    updateProviderStatus(
-                        providerId,
-                        "pending",
-                        "Inicia sesión para consultar"
-                    );
-                });
-            }
-        });
-    }
+    const authClient = getSupabaseClient();
+    authClient?.auth?.onAuthStateChange((event) => {
+        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+            window.setTimeout(() => loadSavedIntegrations(), 0);
+            window.setTimeout(() => loadUserProfile(), 0);
+        } else if (event === "SIGNED_OUT") {
+            Object.keys(providers).forEach(providerId => {
+                updateProviderStatus(providerId, "pending", "Pendiente de configuración");
+            });
+        }
+    });
 
 
     // ========================================================
-    // 23. API DEL MÓDULO
+    // 18. API DEL MÓDULO
     // ========================================================
 
     window.CompraSmartIntegrations = Object.freeze({
@@ -920,8 +796,7 @@ document.addEventListener("DOMContentLoaded", () => {
         closeModal,
         updateProviderStatus,
         updateStatistics,
-        loadSavedIntegrations,
-        deleteIntegration,
+        reloadSavedIntegrations: loadSavedIntegrations,
 
         getProviders() {
             return { ...providers };
@@ -930,6 +805,7 @@ document.addEventListener("DOMContentLoaded", () => {
         getStates() {
             return { ...integrationStates };
         }
+
     });
 
 
