@@ -300,6 +300,62 @@ document.addEventListener("DOMContentLoaded", async () => {
         ...document.querySelectorAll(".dashboard-view")
     ];
 
+    const menuBackdrop = $("mobileMenuBackdrop");
+    const menuClose = $("mobileMenuClose");
+    const dashboardMain = document.querySelector(".dashboard-main");
+    const mobileViewport = window.matchMedia?.("(max-width: 900px)");
+    const isMobileViewport = () => mobileViewport?.matches ?? window.innerWidth <= 900;
+
+    function setMobileMenu(open, restoreFocus = true) {
+        if (!elements.sidebar) return false;
+        const wasOpen = elements.sidebar.classList.contains("open");
+        const mobile = isMobileViewport();
+        open = Boolean(open && mobile);
+        elements.sidebar.classList.toggle("open", open);
+        document.body.classList.toggle("mobile-menu-open", open);
+        elements.mobileMenu?.setAttribute("aria-expanded", String(open));
+        if (menuBackdrop) menuBackdrop.hidden = !open;
+        if (dashboardMain) dashboardMain.inert = open;
+        elements.sidebar.inert = mobile && !open;
+        if (mobile) elements.sidebar.setAttribute("aria-hidden", String(!open));
+        else elements.sidebar.removeAttribute("aria-hidden");
+        if (open) {
+            elements.sidebar.setAttribute("role", "dialog");
+            elements.sidebar.setAttribute("aria-modal", "true");
+            elements.sidebar.setAttribute("aria-label", "Menú de CompraSmart");
+            menuClose?.focus();
+        } else {
+            elements.sidebar.removeAttribute("role");
+            elements.sidebar.removeAttribute("aria-modal");
+            elements.sidebar.removeAttribute("aria-label");
+            if (wasOpen && restoreFocus && mobile) elements.mobileMenu?.focus();
+        }
+        return wasOpen;
+    }
+
+    elements.mobileMenu?.addEventListener("click", () => {
+        setMobileMenu(!elements.sidebar?.classList.contains("open"));
+    });
+    menuClose?.addEventListener("click", () => setMobileMenu(false));
+    menuBackdrop?.addEventListener("click", () => setMobileMenu(false));
+    document.addEventListener("keydown", event => {
+        if (!elements.sidebar?.classList.contains("open")) return;
+        if (event.key === "Escape") {
+            event.preventDefault();
+            setMobileMenu(false);
+        } else if (event.key === "Tab") {
+            const controls = [...elements.sidebar.querySelectorAll('button:not([disabled]),a[href]')];
+            const first = controls[0], last = controls.at(-1);
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault(); last?.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault(); first?.focus();
+            }
+        }
+    });
+    mobileViewport?.addEventListener?.("change", () => setMobileMenu(false));
+    setMobileMenu(false, false);
+
     function showView(viewName, updateURL = true) {
 
         const target = $(`view-${viewName}`);
@@ -336,9 +392,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         });
 
-        elements.sidebar?.classList.remove("open");
-
-        elements.mobileMenu?.setAttribute("aria-expanded", "false");
+        if (setMobileMenu(false, false)) {
+            const heading = target.querySelector("h2");
+            heading?.setAttribute("tabindex", "-1");
+            heading?.focus({preventScroll:true});
+        }
 
         if (updateURL) {
 
@@ -400,21 +458,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         const open = group.classList.toggle("open");
 
         settingsToggle.setAttribute(
-            "aria-expanded",
-            String(open)
-        );
-
-    });
-
-    // Menú móvil.
-
-    elements.mobileMenu?.addEventListener("click", () => {
-
-        if (!elements.sidebar) return;
-
-        const open = elements.sidebar.classList.toggle("open");
-
-        elements.mobileMenu.setAttribute(
             "aria-expanded",
             String(open)
         );
@@ -2126,36 +2169,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         renderPriceComparison
     );
 
-    // La búsqueda pública se realiza en buscadores externos: no se simulan
-    // cotizaciones ni se presentan precios que el sistema no haya consultado.
-    const webSupplierSearch = $("webSupplierSearch");
-    const webSupplierSearchButton = $("webSupplierSearchButton");
-    const webSearchLinks = $("webSearchLinks");
-
-    function buildWebSupplierSearch() {
-        const term = webSupplierSearch?.value.trim();
-        if (!term) {
-            webSupplierSearch?.focus();
-            notify("Escribe el producto que deseas cotizar.", "warning");
-            return;
-        }
-        const query = `${term} precio proveedor mayorista Perú`;
-        const encoded = encodeURIComponent(query);
-        const shoppingURL = `https://www.google.com/search?tbm=shop&q=${encoded}`;
-        const webURL = `https://www.google.com/search?q=${encoded}`;
-        const mapsURL = `https://www.google.com/maps/search/${encodeURIComponent(`${term} proveedores`)}`;
-        if (webSearchLinks) {
-            webSearchLinks.innerHTML = `
-                <a href="${shoppingURL}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-tags" aria-hidden="true"></i> Google Shopping</a>
-                <a href="${webURL}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-google" aria-hidden="true"></i> Buscar proveedores</a>
-                <a href="${mapsURL}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Proveedores en Maps</a>
-                <span>Resultados externos: verifica precio, presentación, disponibilidad, envío e impuestos antes de comparar.</span>
-            `;
-        }
-    }
-    webSupplierSearchButton?.addEventListener("click", buildWebSupplierSearch);
-    webSupplierSearch?.addEventListener("keydown", event => {
-        if (event.key === "Enter") { event.preventDefault(); buildWebSupplierSearch(); }
+    window.CompraSmartProductSearch?.mount({
+        client: supabase,
+        form: $("productSearchForm"),
+        input: elements.comparisonSearch,
+        button: $("webSupplierSearchButton"),
+        status: $("webSupplierSearchStatus"),
+        results: $("webSupplierResults"),
+        list: $("webSupplierResultList"),
+        caption: $("webSupplierResultsCaption"),
+        isReady: () => state.initialized
     });
 
     // ========================================================

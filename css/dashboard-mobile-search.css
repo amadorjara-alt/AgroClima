@@ -1,0 +1,51 @@
+/* Menú del dashboard: prevalece sobre las reglas antiguas que lo ocultaban. */
+.dashboard-body .sidebar { display:flex; flex-direction:column; z-index:110; }
+.dashboard-body .sidebar .sidebar-brand-text { display:flex; }
+.dashboard-body .sidebar-brand .brand-icon { display:grid; }
+.dashboard-body .sidebar .nav-item > span { display:inline; }
+.dashboard-body .sidebar .nav-item > .nav-icon { display:inline-grid; }
+.mobile-menu-close,.mobile-menu-backdrop { display:none; }
+.mobile-menu-backdrop[hidden],.web-supplier-results[hidden] { display:none!important; }
+body.dashboard-body:has(.sidebar.open)::after { content:none; }
+
+.comparison-toolbar { display:block; }
+.comparison-search-form { display:flex; align-items:flex-end; gap:12px; }
+.comparison-search-field { flex:1; min-width:0; }
+.comparison-search-field label { display:block; margin-bottom:8px; color:#365444; font-size:12px; font-weight:700; }
+.comparison-search-field input { width:100%; min-height:46px; padding:11px 14px; border:1px solid #cbded2; border-radius:10px; background:#fff; color:#203b2e; font:inherit; }
+.comparison-search-form .primary-button { min-height:46px; flex:0 0 auto; }
+.product-search-help,.product-search-status { margin:10px 0 0; color:#64786c; font-size:12px; line-height:1.6; overflow-wrap:anywhere; }
+.product-search-status:empty { display:none; }
+.product-search-status.error { color:#a33240; }
+.web-supplier-results { margin:22px 0 26px; padding:18px; border:1px solid #dcebe2; border-radius:13px; background:#f7fbf8; scroll-margin-top:100px; }
+.web-search-results-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr)); gap:12px; }
+.web-search-result { min-width:0; padding:16px; border:1px solid #dce8e0; border-radius:11px; background:#fff; }
+.web-search-result h4 { margin:7px 0 10px; font-size:14px; line-height:1.5; overflow-wrap:anywhere; }
+.web-search-result p { margin:0 0 12px; color:#5d7165; font-size:12px; line-height:1.7; overflow-wrap:anywhere; }
+.web-search-result small { display:block; color:#718278; overflow-wrap:anywhere; }
+.web-search-result a { color:#087f5b; font-weight:700; }
+.comparison-own-title { margin:24px 0 15px; color:#203d30; font-size:15px; }
+
+@media(max-width:900px) {
+  .dashboard-body .sidebar { width:min(290px,calc(100vw - 48px)); min-width:0; visibility:hidden; transform:translateX(-105%); transition:transform .2s ease; }
+  .dashboard-body .sidebar.open { visibility:visible; transform:translateX(0); }
+  .dashboard-body .sidebar-brand { margin-right:30px; }
+  .mobile-menu-close { position:absolute; top:18px; right:10px; display:grid; place-items:center; width:38px; height:38px; padding:0; border:1px solid #537c68; border-radius:9px; color:#fff; background:#1e503c; font-size:26px; cursor:pointer; }
+  .mobile-menu-backdrop:not([hidden]) { position:fixed; inset:0; z-index:105; display:block; width:100%; height:100dvh; margin:0; padding:0; border:0; border-radius:0; background:rgba(12,32,23,.42); cursor:pointer; }
+  body.dashboard-body.mobile-menu-open { overflow:hidden; }
+}
+@media(max-width:620px) {
+  .dashboard-header { gap:10px; }
+  .header-left { flex:1; gap:10px; }
+  .header-left > div { min-width:0; }
+  .dashboard-body .mobile-menu-button { width:42px; height:42px; flex:0 0 42px; }
+  .header-right { gap:8px; }
+  .dashboard-header .profile-information { display:none; }
+  .dashboard-body #pageTitle { line-height:1.3; overflow-wrap:anywhere; }
+  .comparison-search-form { flex-direction:column; align-items:stretch; gap:10px; }
+  .comparison-search-form .primary-button { width:100%; }
+  .web-supplier-results { padding:13px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .dashboard-body .sidebar { transition:none; }
+}

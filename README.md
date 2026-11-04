@@ -36,3 +36,15 @@ El fixture está marcado sin validez: dos productos, subtotal 100, IGV 18 y tota
 - [Configuración pendiente del grupo](docs/ACCESOS_Y_CIERRE.md).
 
 Las ampliaciones de scraping, Sheets, Drive, Excel, automatizaciones y bot de Telegram aún no están implementadas. Google Login es opcional: su código está preparado, pero el proveedor sigue desactivado en Supabase. El login principal utiliza correo y contraseña.
+
+## Menú móvil y búsqueda dentro del panel
+
+En el celular, el botón ☰ abre todas las secciones. El menú se cierra con ×, tocando el fondo, con Escape o al elegir una sección. Al pasar a escritorio vuelve a ser una barra lateral y el contenido queda disponible.
+
+En **Comparar precios**, un solo campo filtra las compras confirmadas mientras escribes. **Buscar** consulta la API de Tavily y muestra títulos, extractos y enlaces de las fuentes dentro de la misma página. Los extractos web se consultan con cada proveedor; no se guardan automáticamente como precios confirmados ni se usan para calcular alertas.
+
+La función `search-products` exige una sesión válida de Supabase. Utiliza el acceso gratuito `keyless` de Tavily para uso ligero, sin otra cuenta ni una clave en el navegador. Este acceso tiene límites del proveedor. Si se alcanza el límite, se informa en pantalla y las compras guardadas siguen disponibles. Opcionalmente, el administrador puede crear una cuenta gratuita en Tavily y guardar `TAVILY_API_KEY` en **Supabase → Edge Functions → Secrets**. La clave solo se envía desde el servidor a Tavily. No se activa facturación ni se cambian las claves de OCR.
+
+Para contener llamadas repetidas hay caché de fuentes públicas durante cinco minutos, deduplicación de consultas en curso y un límite de cinco consultas nuevas por minuto y usuario en cada instancia de la función. Esta protección en memoria no sustituye los límites globales del proveedor.
+
+Documentación: https://docs.tavily.com/documentation/keyless y https://docs.tavily.com/documentation/api-reference/endpoint/search.
