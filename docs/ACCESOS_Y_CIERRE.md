@@ -1,62 +1,48 @@
-# Accesos necesarios para terminar CompraSmart AI
+# Configuración pendiente para cerrar CompraSmart AI
 
-## Qué se necesita y cómo entregarlo
+## Accesos ya resueltos
 
-| Servicio | Recurso concreto | Acceso necesario | Forma segura |
-| --- | --- | --- | --- |
-| GitHub | `amadorjara-alt/CompraSmart-AI` | Escritura habilitada y creación de rama remota comprobada. Ya no requiere una nueva invitación. | Cada integrante conserva su cuenta; no compartir contraseñas. Las correcciones se revisan en una rama y PR. |
-| Supabase | Proyecto `CompraSmart-AI`, referencia `fledooqwmwrjufeihoqn` | Una cuenta conectada con permisos para revisar esquema, Auth, Storage, funciones, logs, RLS y desplegar los cambios autorizados. | Conectar la cuenta que accede al proyecto o dar membresía a la cuenta conectada del grupo. No enviar `service_role` ni contraseña. |
-| OCR.space Free | Clave API del grupo | Una clave gratuita válida para procesar los comprobantes de prueba. | Solicitarla desde https://ocr.space/ocrapi y guardarla en el servidor cuando se configure la función. No publicarla en GitHub ni pegarla en el chat. |
-| Google Cloud, para el extra de Google Login | Cliente OAuth de tipo Web application del grupo | Configurar identidad, callback, Client ID y Client Secret en Supabase. | El responsable inicia sesión mediante el flujo seguro y registra el Client Secret directamente en Supabase. No es una clave de Gemini. |
+GitHub permite escribir en amadorjara-alt/CompraSmart-AI. Supabase permite administrar CompraSmart-AI (fledooqwmwrjufeihoqn) en amadorjara-alt's Org. La cuenta del integrante debía tener Administrator para autorizar la conexión; Developer no bastaba para ese paso.
 
-GitHub, Supabase y OCR.space corresponden al circuito principal. Google Cloud solo es necesario para demostrar el adicional de Google Login. No se necesita otra cuenta de hosting de pago para la web estática.
+La web ya existe en https://amadorjara-alt.github.io/CompraSmart-AI/. No se necesita contratar hosting ni crear otro Supabase.
 
-La clave publicable y la URL correctas de Supabase ya están en el código; no se solicita sustituirlas. La clave de cifrado `CREDENTIALS_ENCRYPTION_KEY` debe conservarse. No regenerarla como intento de arreglar el OCR: las claves guardadas podrían dejar de descifrarse.
+## Lo que debe introducir el grupo
 
-## Qué reúne la rama de recuperación
+**Falta una clave API gratuita de OCR.space para comprobar el recorrido completo.**
 
-- Correcciones de métricas, monedas, referencias y estados de credenciales.
-- Conservación del cifrado y de las claves al editar metadatos.
-- Recuperación del parser del OCR antiguo y adaptador para OCR.space.
-- Extracción de líneas impresas con cantidades, unidades y precios; advertencias para corrección humana.
-- Llamada a `signInWithOAuth` con Google, tratamiento de cancelación y comprobación de disponibilidad.
-- Retorno del correo de registro al `login.html` del sitio donde se ejecuta la aplicación.
-- Controles de acceso deshabilitados cuando el SDK no puede inicializarse y versión del SDK fijada.
-- Guía de exposición y matriz de evidencia de la rúbrica.
-- **37 pruebas locales aprobadas**, además de la lectura real aislada del comprobante ficticio mediante OCR.space ya documentada.
+1. Abrir https://ocr.space/ocrapi y solicitar la clave Free con un correo del grupo.
+2. Guardarla desde la web → Integraciones → OCR.space → Configurar. El servidor la cifra con el secreto existente.
+3. Como alternativa, el administrador puede abrir https://supabase.com/dashboard/project/fledooqwmwrjufeihoqn/functions/secrets y crear OCR_SPACE_API_KEY con la clave de OCR.space. Introducir su valor directamente en Supabase.
+4. No compartir la clave en el chat ni publicarla en GitHub. No usar la clave pública de demostración para el grupo.
+5. No regenerar CREDENTIALS_ENCRYPTION_KEY: los registros existentes necesitan el secreto original.
 
-Las correcciones se reúnen en `codex/recuperacion-ocr-integraciones` para revisión en GitHub. No se da por terminado el circuito completo del proyecto ni por desplegadas las funciones de Supabase.
+## Demostración final
 
-## Orden de cierre después de habilitar los accesos
+Entrar con una cuenta del proyecto, subir el comprobante ficticio tests/fixtures/receipt-demo.png, revisar los dos productos y confirmar. Comprobar que el historial guarda 118 PEN y que el catálogo, proveedor y referencias reaparecen después de recargar.
 
-1. Comparar otra vez la rama principal remota y conservar el respaldo de la versión y datos pertinentes.
-2. Recuperar el código y los logs reales de `process-invoice`; revisar `manage-integration` desplegada y la existencia del secreto original de cifrado sin exponer sus valores.
-3. Auditar el esquema, relaciones, políticas y bucket mediante `supabase/audit/read-only.sql`. Preparar cambios compatibles con los datos existentes.
-4. Integrar OCR.space con lectura autorizada de archivos, clave de servidor, control de cuotas, borrador revisable y persistencia coordinada de compras y precios. Conservar los archivos y datos existentes.
-5. Activar la configuración de registro y las URL de confirmación y recuperación para la URL final de GitHub Pages.
-6. Si se incluye Google, configurar OAuth y realizar el recorrido completo con consentimiento del usuario.
-7. Subir los cambios del grupo, ejecutar CI y comprobar la web publicada.
-8. Probar con dos cuentas de aplicación y documentos ficticios: registro, login, recarga, OCR, corrección, guardado, comparación, gráficos, RLS y cierre de sesión.
-9. Preparar evidencias y ensayar la sustentación individual. No asignar puntos de la rúbrica basándose solo en pruebas simuladas.
+Si se usan líneas sin impuestos, introducir 18 como impuesto adicional en ese fixture. Si los precios de una factura real ya incluyen IGV, introducir 0 adicional. No sumar el impuesto dos veces.
 
-## Configuración de Google que se revisará
+Un documento guardado sin clave puede procesarse después con su botón Procesar OCR; no es necesario volver a subirlo. Un borrador existente se recupera sin otra llamada al proveedor.
 
-En Google Auth Platform, crear o usar un cliente **Web application**. El origen autorizado será el origen real de la web, sin su ruta. El redirect URI hacia Supabase debe ser:
+Para comparar, registrar otro comprobante ficticio de otro proveedor con el mismo nombre completo, marca y unidad. No mezclar presentaciones ni monedas. La alerta señala una diferencia de al menos 15% frente a la menor compra reciente del negocio.
 
-`https://fledooqwmwrjufeihoqn.supabase.co/auth/v1/callback`
+## Registro, recuperación y extra de Google
 
-En Supabase Auth, activar Google e introducir el Client ID y el Client Secret. La lista de redirecciones debe permitir la URL final de `login.html`. También deben autorizarse las URL usadas para confirmación de registro y `reset-password.html`.
+El registro está habilitado y exige confirmar el correo. El dueño de la cuenta debe abrir su buzón y completar esa confirmación; no se requieren contraseñas compartidas.
 
-No confundir el callback de Google a Supabase con el retorno de Supabase a la web. La URL publicada de GitHub Pages se comprobará al disponer del acceso; no se declara publicada por deducir su nombre.
+Revisar en Supabase Auth las URL permitidas:
 
-Solicitar únicamente identidad básica (`openid`, correo y perfil). No habilitar Sheets o Drive para obtener el punto de login. Si la aplicación OAuth permanece en modo de pruebas, se deben registrar los usuarios de prueba que corresponda según la configuración de Google.
+- https://amadorjara-alt.github.io/CompraSmart-AI/login.html
+- https://amadorjara-alt.github.io/CompraSmart-AI/reset-password.html
 
-## Qué pruebas requieren intervención del grupo
+Google Login aún está deshabilitado. Para incluir ese extra de la rúbrica, crear un cliente OAuth Web del grupo. El origen autorizado es https://amadorjara-alt.github.io y el callback de Google a Supabase es:
 
-Para validar correo real, el responsable debe poder abrir su buzón y confirmar el registro. Para Google, debe elegir su cuenta y autorizar el acceso. Para RLS, hacen falta dos usuarios de prueba con registros diferentes; sus contraseñas se introducen mediante un flujo seguro o las crea cada integrante dentro de la aplicación.
+https://fledooqwmwrjufeihoqn.supabase.co/auth/v1/callback
 
-No hacen falta contraseñas compartidas del profesor o de todos los compañeros. Tampoco se necesitan facturas reales de clientes para la exposición.
+El Client ID y Client Secret se introducen directamente en Supabase Auth → Google. No son claves de Gemini. Solicitar solo identidad básica; no Sheets ni Drive. Comprobar el login con una cuenta permitida y el regreso al login.html de la web.
 
-## Comprobación de las conexiones disponibles
+La documentación de la configuración está en https://supabase.com/docs/guides/auth/social-sign-in/auth-google.
 
-La conexión de GitHub usa el perfil `RodolfoAaron`; después de la autorización del propietario se comprobó la creación de una rama en `amadorjara-alt/CompraSmart-AI`. En cambio, consultar `fledooqwmwrjufeihoqn` en Supabase aún devuelve un error de permisos. Debe invitarse a la cuenta propia del integrante a la organización correcta o conectarse una cuenta ya autorizada. No se puede dar por conectado el proyecto por haber instalado el complemento.
+## Verificaciones ya ejecutadas
+
+Ambas funciones nuevas están activas, RLS y confirmación pasaron pruebas reales con dos identidades, la API OCR leyó el fixture y 54 pruebas automáticas pasaron. Esto no sustituye la prueba interactiva final con la clave y las cuentas del grupo.

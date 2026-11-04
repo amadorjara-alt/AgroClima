@@ -1,23 +1,38 @@
 # CompraSmart AI
 
-Aplicación del grupo para gestión de compras y comprobantes. Se conserva el frontend existente y el proyecto Supabase `fledooqwmwrjufeihoqn`.
+Proyecto académico del grupo para organizar comprobantes y comparar costes de compras anteriores.
 
-La auditoría, cambios preparados, pruebas ejecutadas y funciones pendientes están en [docs/AUDITORIA_Y_RECUPERACION.md](docs/AUDITORIA_Y_RECUPERACION.md). La rama `codex/recuperacion-ocr-integraciones` reúne las correcciones para revisión. El acceso de escritura a GitHub está habilitado; el acceso al proyecto Supabase continúa pendiente. Subir el código no despliega las funciones ni activa OAuth.
+**Web del grupo:** https://amadorjara-alt.github.io/CompraSmart-AI/
 
-## Pruebas de desarrollo
+Usa el proyecto Supabase existente, CompraSmart-AI (fledooqwmwrjufeihoqn). El OCR utiliza **OCR.space Free**, motor 2, y reglas de extracción. No llama a Google ni Gemini.
 
-```sh
-npm ci
-npm test
-npm run check
-```
+## Puesta en marcha del grupo
 
-El frontend mantiene su funcionamiento con archivos estáticos. Node se utiliza para desarrollar y probar, no añade un servidor de pago a la aplicación. Las dependencias de prueba no se cargan en el navegador.
+1. Solicitar una clave gratuita en https://ocr.space/ocrapi.
+2. Iniciar sesión en la web y abrir **Integraciones → OCR.space → Configurar**. La clave se envía al servidor y se guarda cifrada. No pegarla en el chat ni en GitHub.
+3. Alternativamente, el administrador puede introducirla directamente en Supabase → Edge Functions → Secrets con el nombre **OCR_SPACE_API_KEY**. No sustituir CREDENTIALS_ENCRYPTION_KEY.
+4. Subir un JPG, PNG o PDF de hasta 900 KB; PDF de hasta tres páginas.
+5. Revisar proveedor, fecha, moneda, productos, presentación, unidad, impuestos adicionales y total. Confirmar la compra para guardar los datos relacionados.
+6. Consultar historial y comparación. Se necesitan compras de dos proveedores para comparar el mismo producto, marca, unidad y moneda.
 
-El adaptador de OCR.space está en `supabase/functions/_shared/ocr-space.mjs`; su prueba manual está en `scripts/probe-ocr.mjs`. Falta acoplarlo a la versión real desplegada de `process-invoice`, una vez recuperada y comparada con los permisos adecuados. No se utiliza Google ni Gemini en ese adaptador.
+La aplicación limita los intentos a 20 por usuario y 200 en todo el proyecto cada 24 horas. La clave pública de demostración se utiliza exclusivamente en pruebas manuales, nunca como configuración del servidor.
 
-Las credenciales privadas se conservan en el servidor. No publicar claves de proveedores, tokens, contraseñas ni el secreto de cifrado. El archivo de configuración pública existente no se reemplaza.
+## Verificación
 
-## Rúbrica y presentación
+    npm ci
+    npm test
+    npm run check
 
-La preparación académica está en [docs/RUBRICA_Y_SUSTENTACION.md](docs/RUBRICA_Y_SUSTENTACION.md), con los cinco criterios, extras, diagrama, recorrido de datos, demostración y preguntas de sustentación. Los accesos y verificaciones que faltan están en [docs/ACCESOS_Y_CIERRE.md](docs/ACCESOS_Y_CIERRE.md).
+Las pruebas automáticas usan datos ficticios y clientes simulados. Los archivos de supabase/tests/ verifican las transacciones y RLS en la base real, con reversión de todos los datos de prueba. La prueba externa aislada se ejecuta manualmente con:
+
+    node scripts/probe-ocr.mjs --public-demo
+
+El fixture está marcado sin validez: dos productos, subtotal 100, IGV 18 y total 118. La prueba externa no sustituye la demostración completa con una cuenta y la clave del grupo.
+
+## Documentación
+
+- [Auditoría, cambios, pruebas y límites](docs/AUDITORIA_Y_RECUPERACION.md).
+- [Rúbrica, secuencia y sustentación](docs/RUBRICA_Y_SUSTENTACION.md).
+- [Configuración pendiente del grupo](docs/ACCESOS_Y_CIERRE.md).
+
+Las ampliaciones de scraping, Sheets, Drive, Excel, automatizaciones y bot de Telegram aún no están implementadas. Google Login es opcional: su código está preparado, pero el proveedor sigue desactivado en Supabase. El login principal utiliza correo y contraseña.

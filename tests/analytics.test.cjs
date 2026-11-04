@@ -10,7 +10,7 @@ const rows = [
 ];
 test('los importes se separan por moneda y excluyen errores y pendientes',()=>{
  assert.deepEqual(analytics.summary(rows).totals,{PEN:100,USD:20});
- assert.deepEqual(analytics.summary(rows).statuses,{pending:1,processing:0,completed:2,failed:1,other:0});
+ assert.deepEqual(analytics.summary(rows).statuses,{pending:1,processing:0,review:0,completed:2,failed:1,other:0});
 });
 test('un documento sin moneda no se transforma en soles',()=>{
  assert.deepEqual(analytics.summary([{ocr_status:'completed',total_amount:50}]).totals,{UNKNOWN:50});

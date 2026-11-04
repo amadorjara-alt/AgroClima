@@ -74,6 +74,15 @@ test('editar el modelo no exige reintroducir ni borrar la clave; eliminarla requ
  assert.equal(credentials.size,0);assert.equal(page.calls.filter(call=>call.body.action==='delete').length,1);
  page.dom.window.close();
 });
+test('OCR.space tiene una configuración propia y guardar la clave no simula una conexión verificada',async()=>{
+ const credentials=new Map([['gemini',{provider:'gemini',model:'configuración-anterior'}]]),p=await integrationPage(credentials);
+ p.api.openModal('ocrspace');const d=p.dom.window.document;
+ assert.equal(d.getElementById('apiKey').required,true);assert.ok(p.api.getProviders().ocrspace);
+ d.getElementById('apiKey').value='clave-ficticia-ocrspace';d.getElementById('integrationForm').dispatchEvent(new p.dom.window.Event('submit',{bubbles:true,cancelable:true}));
+ await until(()=>p.api.getStates().ocrspace==='configured');
+ assert.equal(p.calls.find(c=>c.body.action==='save').body.provider,'ocrspace');assert.equal(p.api.getStates().gemini,'configured');
+ assert.equal(d.getElementById('apiKey').value,'');assert.equal(p.dom.window.localStorage.length,0);p.dom.window.close();
+});
 test('el dashboard muestra monedas separadas y tres gráficos con datos simulados identificados',async()=>{
  const html=await source('dashboard.html'),analyticsCode=await source('js/purchase-analytics.js'),dashboardCode=await source('js/dashboard.js');
  const now=new Date().toISOString();

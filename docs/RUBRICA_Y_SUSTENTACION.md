@@ -7,8 +7,8 @@ Referencia: «Rubrica Pract Laboratorio 2 SI (1).pdf», entregada por el grupo. 
 | Criterio | Puntos | Evidencia que debe mostrar cada integrante | Estado real |
 | --- | ---: | --- | --- |
 | Identificación del problema | 3 | Problema, usuario beneficiado y valor aportado. | Explicación preparada abajo. |
-| Funcionamiento de la solución | 4 | Entrar, cargar un comprobante, procesarlo, revisar sus datos, guardar y recuperar la información. | Código y adaptador preparados; integración y prueba real en el Supabase del grupo pendientes de acceso. |
-| Comprensión e integración tecnológica | 6 | Mostrar qué envía el navegador, qué ejecuta el servidor, dónde se guarda y cómo responde la API. | Diagrama y explicación preparados; el flujo completo debe comprobarse después de conectar `process-invoice`. |
+| Funcionamiento de la solución | 4 | Entrar, cargar un comprobante, procesarlo, revisar sus datos, guardar y recuperar la información. | Funciones desplegadas y guardado probado en la base real; falta el recorrido interactivo con la clave OCR del grupo. |
+| Comprensión e integración tecnológica | 6 | Mostrar qué envía el navegador, qué ejecuta el servidor, dónde se guarda y cómo responde la API. | OCR.space conectado a process-invoice; explicar borrador, reserva de intentos, confirmación transaccional e historial. |
 | Autenticación | 3 | Login real con una cuenta, persistencia y cierre de sesión. Explicar por qué una contraseña incorrecta no permite entrar. | Código existente revisado y pruebas locales de flujo; falta validación con cuentas reales del proyecto. |
 | Sustentación y dominio | 4 | Explicar decisiones, límites, errores y participación de la IA. | Preguntas y respuestas preparadas abajo. |
 
@@ -18,7 +18,7 @@ Referencia: «Rubrica Pract Laboratorio 2 SI (1).pdf», entregada por el grupo. 
 | --- | ---: | --- |
 | Registro desde la aplicación | +1 | Probar registro, recepción y confirmación del correo en el proyecto real. El retorno a `login.html` ya está preparado. |
 | Inicio de sesión con Google | +1 | Activar OAuth en Supabase y Google Cloud y probar el recorrido completo. La llamada a `signInWithOAuth` está implementada en la rama de recuperación; no equivale a un login real ya verificado. |
-| RLS en Supabase | +1 | Inspeccionar y comprobar las políticas existentes con dos usuarios y registros de prueba. No basta ocultar botones o filtrar el frontend. |
+| RLS en Supabase | +1 | Prueba real aprobada con dos identidades y datos ficticios revertidos: aislamiento, relaciones, bóveda y confirmación. Mostrar también la separación entre dos cuentas en la demostración del grupo. |
 
 Scraping, múltiples LLM, Sheets, Excel y automatizaciones forman parte de la ampliación solicitada en el documento maestro, pero no son criterios obligatorios de esta rúbrica. Se conservan como trabajo posterior al circuito principal y no deben impedir demostrar correctamente el login, los datos y el OCR.
 
@@ -40,7 +40,7 @@ No afirmar que conocemos todos los precios del mercado. Las referencias disponib
 | OCR | OCR.space, motor 2 | Recibir una imagen o PDF permitido y devolver texto mediante una API HTTP. |
 | Estructuración | Reglas de extracción | Proponer proveedor, RUC, fecha, número, cantidades, unidades e importes y advertir inconsistencias. |
 | Datos | PostgreSQL de Supabase | Negocios, comprobantes, catálogo, proveedores e historial. |
-| Protección | RLS y validaciones de servidor | Restringir operaciones a los datos autorizados del usuario. Su estado real aún debe auditarse. |
+| Protección | RLS y validaciones de servidor | Restringir operaciones a los datos autorizados y validar las relaciones. La prueba SQL con dos identidades ya pasó. |
 | Visualización | Chart.js | Dibujar gráficos a partir de datos consultados. Los cálculos se mantienen separados por moneda. |
 
 ### Flujo objetivo que debe verificarse antes de exponer
@@ -58,13 +58,13 @@ flowchart TD
   H --> I{Revisión humana}
   I -->|Corregir| H
   I -->|Confirmar| J[Guardar datos confirmados]
-  J --> K[Consultar historial y referencias]
+  J --> K[Consultar historial y alertas]
   F -->|Error| L[Mostrar causa y conservar el documento]
   G -->|Cuota o formato| L
-  L --> I
+  L -->|Configurar o reintentar| F
 ```
 
-El diagrama describe el circuito que se terminará de conectar. El adaptador gratuito está probado por separado; la versión desplegada de `process-invoice` todavía debe recuperarse, compararse y adaptarse. No presentar todo el diagrama como una funcionalidad actualmente publicada.
+El código de este circuito ya está implementado y ambas funciones están desplegadas. Las partes se comprobaron con pruebas automáticas, llamada real a OCR.space y SQL real. Falta demostrar el recorrido completo desde la web con una cuenta y la clave del grupo; no presentar esa prueba interactiva como ya ejecutada.
 
 ### Qué viaja por cada conexión
 
@@ -73,7 +73,7 @@ El diagrama describe el circuito que se terminará de conectar. El adaptador gra
 3. El archivo se carga en Storage y su ruta queda asociada al comprobante, usuario y negocio. Una ruta del navegador no sustituye la autorización del servidor.
 4. La función recupera y valida el documento autorizado y realiza el POST al proveedor OCR. La clave privada del proveedor permanece en el servidor.
 5. OCR.space devuelve JSON con texto reconocido. Las reglas organizan lo reconocible y mantienen advertencias sobre lo desconocido; no completan precios inventados.
-6. Los datos confirmados deben guardarse y consultarse en el mismo negocio. El paso que relaciona las líneas con el catálogo e historial debe contrastarse con el esquema real antes de implementarse.
+6. Al confirmar, el navegador llama a confirm_invoice_data. PostgreSQL valida y guarda factura, proveedor, productos, líneas e historial en una transacción dentro del negocio. Un error revierte toda la operación y un segundo clic no la duplica.
 7. Los gráficos se calculan desde los registros consultados. PEN y USD se muestran por separado, sin una conversión cambiaria implícita.
 
 Al mostrar Network en clase, enseñar URL, estado y formato de la respuesta. Evitar mostrar contraseñas, tokens `Authorization`, Client Secret o claves privadas.
@@ -171,7 +171,7 @@ La prueba manual aislada del adaptador puede ejecutarse con `node scripts/probe-
 
 ## 7. Límites que se deben reconocer
 
-La prueba completa de producción y de RLS está pendiente de acceso al proyecto Supabase correcto. El código de Google OAuth no certifica que Google Cloud y Supabase estén configurados. El adaptador de OCR.space aún debe conectarse a la versión desplegada de `process-invoice`.
+El acceso a Supabase ya funciona y las pruebas reales de RLS y confirmación pasaron. Falta la demostración interactiva con la clave del grupo y sus cuentas. Google continúa deshabilitado en la configuración pública de Auth: su código no certifica que Google Cloud esté configurado. OCR.space sí está conectado a la función desplegada; la clave pública de demostración no se guarda en producción.
 
 El parser reconoce algunas filas impresas con cantidad, descripción y dos importes al final. Las unidades desconocidas y discrepancias se marcan para revisión; no se garantiza cualquier formato de factura. Los PDFs y archivos están sujetos a los límites del proveedor gratuito.
 

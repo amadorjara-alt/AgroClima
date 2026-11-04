@@ -8,7 +8,7 @@ const corsHeaders = {
   "Vary": "Origin",
 };
 
-const allowedProviders = new Set(["gemini", "openai", "serpapi", "firecrawl"]);
+const allowedProviders = new Set(["gemini", "openai", "serpapi", "firecrawl", "ocrspace"]);
 const json = (body: Record<string, unknown>, status = 200) =>
   new Response(JSON.stringify(body), {
     status,

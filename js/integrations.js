@@ -65,6 +65,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // ========================================================
 
     const providers = Object.freeze({
+
+        ocrspace: {
+            name: "OCR.space",
+            description: "API gratuita para leer PDF, JPG y PNG. Guarda aquí la clave del grupo; se cifra en el servidor.",
+            model: "OCR Engine 2"
+        },
         gemini: {
             name: "Google Gemini",
             description:

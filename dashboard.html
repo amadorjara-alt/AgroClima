@@ -561,7 +561,7 @@
             <input
                 type="file"
                 id="invoiceFile"
-                accept=".jpg,.jpeg,.png,.webp,.pdf"
+                accept=".jpg,.jpeg,.png,.pdf"
                 aria-label="Seleccionar factura"
                 hidden
             >
@@ -582,8 +582,8 @@
                         <h3>Registrar comprobante</h3>
 
                         <p>
-                            Formatos admitidos: PDF, JPG, PNG y WEBP.
-                            Tamaño máximo: 10 MB.
+                            OCR.space gratuito: PDF, JPG y PNG de hasta 900 KB.
+                            En PDF, máximo tres páginas. Revisa los datos antes de guardar.
                         </p>
                     </div>
 
@@ -621,8 +621,8 @@
                 <div class="supplier-list-header">
 
                     <div>
-                        <h3>Resultado del procesamiento</h3>
-                        <p>Información identificada en el comprobante.</p>
+                        <h3>Revisa y confirma tu compra</h3>
+                        <p>La extracción queda como borrador hasta que confirmes los datos.</p>
                     </div>
 
                 </div>
@@ -662,6 +662,7 @@
                             <tr>
                                 <th>Documento</th>
                                 <th>Fecha</th>
+                                <th>Total confirmado</th>
                                 <th>Estado de procesamiento</th>
                                 <th>Acciones</th>
                             </tr>
@@ -670,7 +671,7 @@
                         <tbody id="invoicesTableBody">
 
                             <tr>
-                                <td colspan="4">
+                                <td colspan="5">
                                     Cargando documentos...
                                 </td>
                             </tr>
@@ -1671,6 +1672,7 @@
 <script src="js/supabase.js" defer></script>
 <script src="js/main.js" defer></script>
 <script src="js/purchase-analytics.js" defer></script>
+<script src="js/invoice-review.js" defer></script>
 <script src="js/dashboard.js" defer></script>
 
 </body>

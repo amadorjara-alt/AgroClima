@@ -361,20 +361,18 @@
 
     const invoiceConfig = Object.freeze({
 
-        maxSize: 10 * 1024 * 1024,
+        maxSize: 900000,
 
         allowedExtensions: [
             "jpg",
             "jpeg",
             "png",
-            "webp",
             "pdf"
         ],
 
         allowedMimeTypes: [
             "image/jpeg",
             "image/png",
-            "image/webp",
             "application/pdf"
         ]
 
@@ -417,7 +415,7 @@
 
             return {
                 valid: false,
-                message: "El archivo supera el límite permitido de 10 MB."
+                message: "El archivo supera el límite gratuito de 900 KB."
             };
 
         }

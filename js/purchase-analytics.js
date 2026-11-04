@@ -26,7 +26,7 @@
         return `${parts.year}-${parts.month}-${parts.day}`;
     }
     function summary(rows) {
-        const totals = {}, statuses = { pending: 0, processing: 0, completed: 0, failed: 0, other: 0 };
+        const totals = {}, statuses = { pending: 0, processing: 0, review: 0, completed: 0, failed: 0, other: 0 };
         for (const row of rows || []) {
             const status = Object.hasOwn(statuses, row.ocr_status) ? row.ocr_status : "other";
             statuses[status]++;
