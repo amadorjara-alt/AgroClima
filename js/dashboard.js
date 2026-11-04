@@ -94,7 +94,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         historyBody: $("historyTableBody"),
 
         settingsBusinessName: $("settingsBusinessName"),
-        settingsOwnerName: $("settingsOwnerName")
+        settingsOwnerName: $("settingsOwnerName"),
+        settingsUserEmail: $("settingsUserEmail"),
+        settingsUserId: $("settingsUserId")
     };
 
     // ========================================================
@@ -423,24 +425,83 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         }
 
+        // Mostrar siempre los datos reales de la cuenta autenticada.
+        if (elements.settingsUserEmail) {
+            elements.settingsUserEmail.textContent =
+                currentUser.email || "Correo no disponible";
+        }
+
+        if (elements.settingsUserId) {
+            elements.settingsUserId.textContent =
+                currentUser.id || "Identificador no disponible";
+        }
+
+        // Buscar el perfil comercial asociado a este usuario.
         const { data: business, error: businessError } =
             await supabase
                 .from("businesses")
-                .select("id, business_name, owner_name")
+                .select("id, user_id, business_name, owner_name")
                 .eq("user_id", currentUser.id)
+                .limit(1)
                 .maybeSingle();
 
-        if (businessError) throw businessError;
-
-        if (!business) {
-
+        if (businessError) {
             throw new Error(
-                "Tu cuenta no tiene un negocio registrado. Revisa tu perfil."
+                `No se pudo consultar el perfil del negocio: ${businessError.message}`
             );
-
         }
 
         currentBusiness = business;
+
+        // El registro original guarda business_name y owner_name en
+        // user_metadata. Si aún no existe la fila en businesses, crearla
+        // al iniciar sesión por primera vez.
+        if (!currentBusiness) {
+            const metadata = currentUser.user_metadata || {};
+            const businessName = String(
+                metadata.business_name || metadata.businessName || "Mi negocio"
+            ).trim();
+            const ownerName = String(
+                metadata.owner_name || metadata.ownerName ||
+                currentUser.email?.split("@")[0] || "Usuario"
+            ).trim();
+
+            const { data: createdBusiness, error: createError } =
+                await supabase
+                    .from("businesses")
+                    .insert({
+                        user_id: currentUser.id,
+                        business_name: businessName,
+                        owner_name: ownerName
+                    })
+                    .select("id, user_id, business_name, owner_name")
+                    .single();
+
+            if (createError) {
+                // Si otra pestaña creó el perfil al mismo tiempo, volver
+                // a consultar antes de mostrar un error.
+                const { data: retryBusiness, error: retryError } =
+                    await supabase
+                        .from("businesses")
+                        .select("id, user_id, business_name, owner_name")
+                        .eq("user_id", currentUser.id)
+                        .limit(1)
+                        .maybeSingle();
+
+                if (retryError || !retryBusiness) {
+                    const detail = createError.code === "42501"
+                        ? "Supabase bloqueó la creación por permisos RLS. Se necesita una política INSERT que permita auth.uid() = user_id."
+                        : createError.message;
+                    throw new Error(
+                        `No se pudo crear el perfil del negocio. ${detail}`
+                    );
+                }
+
+                currentBusiness = retryBusiness;
+            } else {
+                currentBusiness = createdBusiness;
+            }
+        }
 
         updateBusinessProfile();
 
@@ -1362,11 +1423,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             setInvoiceMessage("Analizando factura con Gemini...");
 
+            const { data: sessionData, error: sessionError } =
+                await supabase.auth.getSession();
+
+            if (sessionError) throw sessionError;
+
+            const accessToken = sessionData?.session?.access_token;
+            if (!accessToken) {
+                throw new Error("Tu sesión expiró. Inicia sesión nuevamente para analizar la factura.");
+            }
+
             const { data: ocrResult, error: ocrError } =
                 await supabase.functions.invoke(OCR_FUNCTION, {
-                    body: {
-                        file_path: filePath
-                    }
+                    body: { file_path: filePath },
+                    headers: { Authorization: `Bearer ${accessToken}` }
                 });
 
             if (ocrError) throw ocrError;
@@ -1491,15 +1561,29 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             console.error("Error en procesamiento de factura:", error);
 
-            setInvoiceMessage(
-                error.message || "No se pudo procesar la factura.",
-                "error"
-            );
+            let message = error?.message || "No se pudo procesar la factura.";
+            const response = error?.context;
 
-            notify(
-                error.message || "Error al procesar la factura.",
-                "error"
-            );
+            // Supabase FunctionsHttpError guarda la respuesta HTTP en context.
+            // Leer una copia permite mostrar el mensaje real del backend.
+            if (response && typeof response.clone === "function") {
+                try {
+                    const body = await response.clone().json();
+                    message = body?.error || body?.message || message;
+                } catch {
+                    try {
+                        const bodyText = await response.clone().text();
+                        if (bodyText) message = bodyText.slice(0, 500);
+                    } catch { /* conservar el mensaje original */ }
+                }
+
+                if (response.status) {
+                    message = `Error HTTP ${response.status}: ${message}`;
+                }
+            }
+
+            setInvoiceMessage(message, "error");
+            notify(message, "error");
 
         } finally {
 
@@ -2052,9 +2136,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     // 14. CONFIGURACIÓN DEL NEGOCIO
     // ========================================================
 
-    const settingsForm = $("settingsForm");
-    const settingsSaveButton = $("saveSettingsButton");
-    const settingsMessage = $("settingsMessage");
+    // Los IDs deben coincidir exactamente con dashboard.html.
+    const settingsForm = $("businessSettingsForm");
+    const settingsSaveButton = $("saveBusinessSettingsButton");
+    const settingsMessage = $("businessSettingsMessage");
 
     settingsForm?.addEventListener("submit", async event => {
 
@@ -2213,5 +2298,4 @@ document.addEventListener("DOMContentLoaded", async () => {
         state.loading = false;
 
     }
-
 });
