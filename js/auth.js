@@ -28,6 +28,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Evita ejecutar operaciones sin conexión inicializada.
     if (!client || !client.auth) {
 
+        ["loginButton", "registerButton", "googleLoginButton"].forEach(id => {
+            if ($(id)) $(id).disabled = true;
+        });
+        [loginForm, registerForm].forEach(form => {
+            form?.addEventListener("submit", event => event.preventDefault());
+        });
+
         console.error(
             "CompraSmart AI: cliente Supabase no disponible."
         );
@@ -46,6 +53,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         return;
     }
+
+    ["loginButton", "registerButton", "googleLoginButton"].forEach(id => {
+        if ($(id)) $(id).disabled = false;
+    });
 
 
     // ========================================================
@@ -403,6 +414,56 @@ document.addEventListener("DOMContentLoaded", () => {
     // 8. RECUPERACIÓN DE CONTRASEÑA
     // ========================================================
 
+    // OAuth: el navegador solicita el acceso; Supabase y Google verifican
+    // la identidad. La respuesta de inicio no equivale a una sesión válida.
+    const googleButton = $("googleLoginButton");
+    const googleAvailability = $("googleLoginAvailability");
+    let googleBusy = false;
+    let googleDisabled = false;
+
+    if (googleButton) {
+        window.CompraSmartSupabase?.getAuthCapabilities?.().then(capabilities => {
+            googleDisabled = capabilities.known && !capabilities.google;
+            if (!googleBusy) googleButton.disabled = googleDisabled;
+            if (googleAvailability) googleAvailability.textContent = googleDisabled
+                ? "El acceso con Google aún no está habilitado. Puedes ingresar con tu correo."
+                : capabilities.known ? "" : "Puedes intentar con Google o ingresar con tu correo.";
+        }).catch(() => { /* El intento de OAuth mostrará un error si no está disponible. */ });
+
+        googleButton.addEventListener("click", async () => {
+            if (googleBusy || googleDisabled) return;
+            googleBusy = true;
+            setMessage($("loginMessage"), "Abriendo el acceso de Google…", "info");
+            setLoading(googleButton, true, "Continuar con Google");
+            try {
+                const { data, error } = await client.auth.signInWithOAuth({
+                    provider: "google",
+                    options: { redirectTo: new URL("login.html", window.location.href).href }
+                });
+                if (error) throw error;
+                if (!data?.url) throw new Error("No se recibió una URL de autorización.");
+                setMessage($("loginMessage"), "Continúa en Google para autorizar el acceso.", "info");
+            } catch (error) {
+                const providerDisabled = /provider.*(?:not enabled|disabled)|unsupported provider/i.test(String(error?.message || ""));
+                setMessage($("loginMessage"), providerDisabled
+                    ? "El acceso con Google aún no está habilitado. Puedes ingresar con tu correo."
+                    : getErrorMessage(error), "error");
+                googleBusy = false;
+                setLoading(googleButton, false, "Continuar con Google");
+                googleButton.disabled = googleDisabled;
+            }
+        });
+    }
+
+    // Mostrar una cancelación sin reflejar códigos, tokens o URLs de OAuth.
+    const callbackParameters = new URL(window.location.href).searchParams;
+    const callbackError = callbackParameters.get("error");
+    if (callbackError && $("loginMessage")) {
+        setMessage($("loginMessage"), callbackError === "access_denied"
+            ? "Se canceló el acceso con Google. Puedes volver a intentarlo o utilizar tu correo."
+            : "No se completó el acceso externo. Puedes utilizar tu correo o avisar al equipo.", "error");
+    }
+
     const forgotPasswordButton =
         $("forgotPasswordButton");
 
@@ -629,6 +690,8 @@ document.addEventListener("DOMContentLoaded", () => {
                             password: passwordValue,
 
                             options: {
+
+                                emailRedirectTo: new URL("login.html", window.location.href).href,
 
                                 data: {
 

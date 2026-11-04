@@ -6981,3 +6981,20 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible { 
  .comparison-web-controls { flex-direction:column; }
  .comparison-web-controls .primary-button { width:100%; }
 }
+
+/* Recuperación: lectura completa y modales desplazables sin alterar el tema. */
+#profileBusinessName, #profileOwnerName, #settingsUserEmail, #settingsUserId,
+.comparison-price-row > span { white-space: normal; overflow-wrap: anywhere; text-overflow: clip; }
+.integration-modal .modal-content { max-height: calc(100dvh - 40px); overflow-y: auto; overscroll-behavior: contain; }
+.integration-modal .modal-actions { flex-wrap: wrap; }
+#deleteIntegration[hidden] { display: none !important; }
+.status-analytics { grid-column: 1 / -1; }
+.status-analytics .chart-container { height: 240px; }
+#overviewPurchaseTotal { overflow-wrap: anywhere; white-space: normal; font-size: clamp(18px,2.2vw,30px); }
+
+.auth-google { display:flex; align-items:center; justify-content:center; gap:12px; width:100%; min-height:46px; padding:12px 18px; border:1px solid #cbd6ce; border-radius:10px; color:#183b2b; background:#fff; font:inherit; font-weight:600; cursor:pointer; }
+.auth-google:hover { background:#f2f7f3; }
+.auth-google:focus-visible { outline:3px solid #6caa86; outline-offset:3px; }
+.auth-google:disabled { opacity:.65; cursor:not-allowed; }
+#googleLoginAvailability { margin-top:10px; overflow-wrap:anywhere; }
+.invoice-review-form{padding:20px;display:grid;gap:18px}.review-notice{padding:14px;border-radius:10px;background:#fff6df;color:#5c451c}.review-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}.review-fields label{display:grid;gap:6px;font-weight:600}.invoice-review-form input{width:100%;padding:10px;border:1px solid #cbd5cd;border-radius:7px;color:inherit;background:var(--card-bg,#fff)}.review-items{min-width:980px}.review-items input{min-width:90px}.review-items td:first-child{min-width:260px}.review-items td:first-child input+input{margin-top:8px}.review-raw{white-space:pre-wrap;overflow-wrap:anywhere;max-height:350px;overflow:auto}.review-warnings{color:#72521e;padding-left:20px}.invoice-status.review{background:#fff0ce;color:#72521e}

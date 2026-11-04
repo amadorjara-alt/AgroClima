@@ -21,7 +21,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const BUCKET = "invoices";
     const OCR_FUNCTION = "process-invoice";
-    const MAX_FILE_SIZE = 10 * 1024 * 1024;
+    const analytics = window.CompraSmartAnalytics;
+    const MAX_FILE_SIZE = 900000;
 
     let currentUser = null;
     let currentBusiness = null;
@@ -36,6 +37,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let uploadingInvoice = false;
     let purchaseEvolutionChart = null;
     let categoryDistributionChart = null;
+    let invoiceStatusChart = null;
 
     const state = {
         initialized: false,
@@ -143,6 +145,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     function formatCurrency(value, currency = "PEN") {
+        if (value === null || value === undefined || String(value).trim() === "") return "Sin importe";
+        if (currency === "UNKNOWN") return `${formatNumber(value)} (sin moneda)`;
 
         const amount = Number(value);
 
@@ -161,6 +165,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             return amount.toFixed(2);
         }
 
+    }
+
+    function formatPurchaseTotals(totals) {
+        const entries = Object.entries(totals);
+        if (!entries.length) return "Sin compras procesadas";
+        return entries.map(([currency, value]) => currency === "UNKNOWN"
+            ? `${formatNumber(value)} (sin moneda)` : formatCurrency(value, currency)).join(" · ");
     }
 
     function formatNumber(value, decimals = 2) {
@@ -1181,7 +1192,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const invoiceStatusLabels = {
         pending: "Pendiente",
         processing: "Procesando",
-        completed: "Procesada",
+        review: "Por confirmar",
+        completed: "Completada",
         failed: "Error"
     };
 
@@ -1192,13 +1204,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         showEmptyMessage(
             elements.invoiceBody,
             "Cargando facturas...",
-            4
+            5
         );
 
         const { data, error } = await supabase
             .from("invoices")
             .select(
-                "id, invoice_number, issue_date, total_amount, currency, file_path, ocr_status, created_at"
+                "id, invoice_number, issue_date, total_amount, currency, file_path, ocr_status, created_at, confirmed_at"
             )
             .eq("user_id", currentUser.id)
             .eq("business_id", currentBusiness.id)
@@ -1225,7 +1237,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             showEmptyMessage(
                 elements.invoiceBody,
                 "Todavía no hay facturas registradas.",
-                4
+                5
             );
 
             return;
@@ -1250,7 +1262,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     <td>${formatDate(invoice.issue_date || invoice.created_at)}</td>
                     <td>${formatCurrency(
                         invoice.total_amount,
-                        invoice.currency || "PEN"
+                        analytics.currencyOf(invoice)
                     )}</td>
                     <td>
                         <span class="invoice-status ${escapeHTML(status)}">
@@ -1267,6 +1279,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                             data-id="${escapeHTML(invoice.id)}">
                             Ver archivo
                         </button>
+                        ${invoice.confirmed_at ? "" : `<button type="button" class="supplier-action-button" data-invoice-action="process" data-id="${escapeHTML(invoice.id)}">${status === 'review' ? 'Revisar borrador' : 'Procesar OCR'}</button>`}
                     </td>
                 </tr>
             `;
@@ -1290,14 +1303,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         if (file.size > MAX_FILE_SIZE) {
-            throw new Error("El archivo supera el límite de 10 MB.");
+            throw new Error("OCR.space gratuito admite aquí archivos de hasta 900 KB. Comprime el documento.");
         }
 
         const allowed = [
             "application/pdf",
             "image/jpeg",
-            "image/png",
-            "image/webp"
+            "image/png"
         ];
 
         const extension = file.name.split(".").pop().toLowerCase();
@@ -1306,12 +1318,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             "pdf",
             "jpg",
             "jpeg",
-            "png",
-            "webp"
+            "png"
         ];
 
         if (!allowedExtensions.includes(extension)) {
-            throw new Error("Formato no permitido. Usa PDF, JPG, PNG o WEBP.");
+            throw new Error("Formato no permitido. Usa PDF, JPG o PNG.");
         }
 
         if (file.type && !allowed.includes(file.type)) {
@@ -1320,13 +1331,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     }
 
-    function renderOCRResult(data) {
+    function renderOCRResult(data, invoiceId) {
 
         if (!elements.invoiceOcr || !elements.invoiceOcrContent) {
             return;
         }
 
+        elements.invoiceOcr.hidden = false;
         elements.invoiceOcr.classList.remove("hidden");
+
+        if (window.CompraSmartInvoiceReview && invoiceId) {
+            window.CompraSmartInvoiceReview.mount({container:elements.invoiceOcrContent,invoiceId,draft:data,onConfirm:async(id,values)=>{
+                const {data:result,error}=await supabase.rpc('confirm_invoice_data',{p_invoice_id:id,p_data:values});
+                if(error)throw error;
+                if(!result?.success)throw new Error('El servidor no confirmó el guardado.');
+                try { await Promise.all([loadInvoices(),loadSuppliers(),loadProducts(),loadDashboardMetrics(),loadHistory(),loadPriceHistory()]); }
+                catch { notify('La compra se guardó. Recarga para actualizar todas las vistas.','warning'); }
+                return result;
+            }});
+            elements.invoiceOcr.scrollIntoView({behavior:'smooth',block:'nearest'});
+            return;
+        }
 
         // Se presenta el contenido como texto, no como HTML.
         // Así evitamos ejecutar contenido recibido del OCR.
@@ -1408,7 +1433,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                         business_id: currentBusiness.id,
                         file_path: filePath,
                         ocr_status: "pending",
-                        currency: "PEN"
+                        currency: null,
+                        total_amount: null
                     })
                     .select("id")
                     .single();
@@ -1421,7 +1447,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             // 3. Invocar OCR.
 
-            setInvoiceMessage("Analizando factura con Gemini...");
+            setInvoiceMessage("Analizando el documento con el proveedor configurado en el servidor...");
 
             const { data: sessionData, error: sessionError } =
                 await supabase.auth.getSession();
@@ -1457,14 +1483,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                 ocrResult.data ??
                 ocrResult;
 
-            renderOCRResult(extracted);
+            renderOCRResult(extracted, invoiceId);
 
             await loadInvoices();
 
             await loadDashboardMetrics();
 
             setInvoiceMessage(
-                "Factura procesada. Revisa los datos extraídos.",
+                "Borrador listo. Revisa y confirma la compra para registrar productos y precios.",
                 "success"
             );
 
@@ -1472,27 +1498,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         } catch (error) {
 
-            // 5. Marcar error si la factura ya fue registrada.
-
-            if (invoiceId) {
-
-                const { error: updateError } = await supabase
-                    .from("invoices")
-                    .update({
-                        ocr_status: "failed"
-                    })
-                    .eq("id", invoiceId)
-                    .eq("user_id", currentUser.id)
-                    .eq("business_id", currentBusiness.id);
-
-                if (updateError) {
-                    console.error(
-                        "No se pudo actualizar el estado OCR:",
-                        updateError
-                    );
-                }
-
-            }
+            // El servidor administra ocr_status. Un error de red o de
+            // actualización del panel no debe sobrescribir un OCR terminado.
 
             // 6. Si no se registró la factura, eliminar archivo huérfano.
 
@@ -1553,7 +1560,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             await uploadInvoice(file);
 
             notify(
-                "Factura procesada correctamente.",
+                "OCR terminado. Falta confirmar la compra.",
                 "success"
             );
 
@@ -1604,7 +1611,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     elements.invoiceBody?.addEventListener("click", async event => {
 
         const button = event.target.closest(
-            "[data-invoice-action='open']"
+            "[data-invoice-action]"
         );
 
         if (!button) return;
@@ -1618,6 +1625,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         setButtonLoading(button, true, "Abriendo...");
 
         try {
+
+            if (button.dataset.invoiceAction === 'process') {
+                const {data:sessionData,error:sessionError}=await supabase.auth.getSession();
+                if(sessionError)throw sessionError;
+                const token=sessionData?.session?.access_token;
+                if(!token)throw new Error('Inicia sesión nuevamente.');
+                const {data,error}=await supabase.functions.invoke(OCR_FUNCTION,{body:{file_path:invoice.file_path},headers:{Authorization:`Bearer ${token}`}});
+                if(error){let detail=error.message;try{detail=(await error.context.clone().json()).error||detail;}catch{}throw new Error(detail);}
+                if(!data?.success)throw new Error(data?.error||'No se pudo analizar el documento.');
+                if(data.confirmed){notify('Esta compra ya está confirmada.','info');await loadInvoices();return;}
+                renderOCRResult(data.extracted,invoice.id);await loadInvoices();await loadDashboardMetrics();
+                return;
+            }
 
             const { data, error } = await supabase.storage
                 .from(BUCKET)
@@ -1646,7 +1666,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             console.error("Error al abrir factura:", error);
 
-            notify("No se pudo abrir la factura.", "error");
+            notify(error.message || "No se pudo abrir la factura.", "error");
 
         } finally {
 
@@ -1670,7 +1690,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             supabase
                 .from("invoices")
-                .select("id, total_amount, currency, created_at, ocr_status")
+                .select("id, total_amount, currency, issue_date, created_at, ocr_status")
                 .eq("user_id", currentUser.id)
                 .eq("business_id", currentBusiness.id),
 
@@ -1694,10 +1714,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const invoiceRows = invoiceResult.data || [];
 
-        const totalPurchases = invoiceRows.reduce(
-            (sum, invoice) => sum + (Number(invoice.total_amount) || 0),
-            0
-        );
+        const metrics = analytics.summary(invoiceRows);
 
         const invoiceCount = invoiceRows.length;
         const productCount = productResult.count || 0;
@@ -1709,7 +1726,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if ($("overviewPurchaseTotal")) {
             $("overviewPurchaseTotal").textContent =
-                formatCurrency(totalPurchases);
+                formatPurchaseTotals(metrics.totals);
         }
 
         if ($("overviewProductCount")) {
@@ -1722,7 +1739,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if ($("overviewInvoiceDescription")) {
             $("overviewInvoiceDescription").textContent =
-                `${invoiceCount} factura${invoiceCount === 1 ? "" : "s"} registrada${invoiceCount === 1 ? "" : "s"}`;
+                `${metrics.statuses.completed} procesadas · ${invoiceCount - metrics.statuses.completed} pendientes o con incidencias`;
         }
 
         if ($("overviewProductDescription")) {
@@ -1754,23 +1771,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             return;
         }
 
-        const monthKeys = [];
-        const monthLabels = [];
-        const now = new Date();
-        for (let offset = 5; offset >= 0; offset--) {
-            const date = new Date(now.getFullYear(), now.getMonth() - offset, 1);
-            monthKeys.push(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`);
-            monthLabels.push(new Intl.DateTimeFormat("es-PE", { month: "short" }).format(date));
-        }
-        const monthlyTotals = new Map(monthKeys.map(key => [key, 0]));
-        (invoiceRows || []).forEach(invoice => {
-            const date = new Date(invoice.created_at || invoice.issue_date);
-            if (Number.isNaN(date.getTime())) return;
-            const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-            if (monthlyTotals.has(key)) monthlyTotals.set(key, monthlyTotals.get(key) + (Number(invoice.total_amount) || 0));
-        });
-        const monthlyValues = monthKeys.map(key => Number(monthlyTotals.get(key).toFixed(2)));
-        const hasPurchases = monthlyValues.some(value => value > 0);
+        const series = analytics.monthlySeries(invoiceRows);
+        const monthLabels = series.labels;
+        const palette = ["#07845e", "#4364a0", "#b67424", "#895aa6"];
+        const hasPurchases = series.datasets.some(dataset => dataset.values.some(value => value > 0));
 
         if (purchaseCanvas && hasPurchases) {
             purchaseCanvas.style.display = "block";
@@ -1780,30 +1784,26 @@ document.addEventListener("DOMContentLoaded", async () => {
                 type: "line",
                 data: {
                     labels: monthLabels,
-                    datasets: [{
-                        label: "Compras registradas",
-                        data: monthlyValues,
-                        borderColor: "#07845e",
-                        backgroundColor: "rgba(8,127,91,.10)",
-                        fill: true,
-                        tension: .36,
-                        borderWidth: 2.5,
-                        pointRadius: 3,
-                        pointHoverRadius: 5,
-                        pointBackgroundColor: "#07845e"
-                    }]
+                    datasets: series.datasets.map((dataset, index) => ({
+                        label: dataset.currency === "UNKNOWN" ? "Sin moneda" : dataset.currency,
+                        currency: dataset.currency,
+                        data: dataset.values,
+                        borderColor: palette[index % palette.length],
+                        backgroundColor: "rgba(8,127,91,.06)",
+                        fill: false, tension: .25, borderWidth: 2.5, pointRadius: 3
+                    }))
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     interaction: { intersect: false, mode: "index" },
                     plugins: {
-                        legend: { display: false },
-                        tooltip: { callbacks: { label: context => ` ${formatCurrency(context.parsed.y)}` } }
+                        legend: { display: series.datasets.length > 1 },
+                        tooltip: { callbacks: { label: context => context.dataset.currency === "UNKNOWN" ? ` ${formatNumber(context.parsed.y)} (sin moneda)` : ` ${formatCurrency(context.parsed.y, context.dataset.currency)}` } }
                     },
                     scales: {
                         x: { grid: { display: false }, ticks: { color: "#829188", font: { size: 10 } } },
-                        y: { beginAtZero: true, grid: { color: "rgba(120,145,130,.12)" }, ticks: { color: "#829188", font: { size: 9 }, callback: value => `S/ ${Number(value).toLocaleString("es-PE")}` } }
+                        y: { beginAtZero: true, grid: { color: "rgba(120,145,130,.12)" }, ticks: { color: "#829188", font: { size: 9 }, callback: value => Number(value).toLocaleString("es-PE") } }
                     }
                 }
             });
@@ -1854,6 +1854,23 @@ document.addEventListener("DOMContentLoaded", async () => {
             categoryEmpty?.classList.remove("hidden");
             if (categoryEmpty) categoryEmpty.textContent = "Registra productos con su categoría para visualizar esta distribución.";
         }
+        const statusCanvas = $("invoiceStatusChart"), statusEmpty = $("invoiceStatusEmpty");
+        const metrics = analytics.summary(invoiceRows);
+        invoiceStatusChart?.destroy();
+        invoiceStatusChart = null;
+        if (statusCanvas && metrics.count) {
+            statusCanvas.style.display = "block";
+            statusEmpty?.classList.add("hidden");
+            invoiceStatusChart = new window.Chart(statusCanvas, {
+                type: "bar",
+                data: { labels: ["Pendientes", "Procesando", "Por confirmar", "Completadas", "Con error", "Otros"], datasets: [{ label: "Comprobantes", data: Object.values(metrics.statuses), backgroundColor: ["#e7b65c", "#6c9fbd", "#b89151", "#087f5b", "#d98d83", "#9eaaa3"] }] },
+                options: { responsive: true, maintainAspectRatio: false, indexAxis: "y", plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } }
+            });
+        } else if (statusCanvas) {
+            statusCanvas.style.display = "none";
+            statusEmpty?.classList.remove("hidden");
+        }
+
     }
 
     function renderRecentActivity(rows) {
@@ -1910,10 +1927,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const rows = data || [];
 
-        const total = rows.reduce(
-            (sum, item) => sum + (Number(item.total_amount) || 0),
-            0
-        );
+        const historyMetrics = analytics.summary(rows);
 
         if ($("historyPurchaseCount")) {
             $("historyPurchaseCount").textContent = rows.length;
@@ -1921,7 +1935,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if ($("historyPurchaseAmount")) {
             $("historyPurchaseAmount").textContent =
-                formatCurrency(total);
+                formatPurchaseTotals(historyMetrics.totals);
         }
 
         if (!rows.length) {
@@ -1947,7 +1961,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     <td>${escapeHTML(item.invoice_number || "Sin número")}</td>
                     <td>${escapeHTML(supplier?.name || "Sin proveedor asociado")}</td>
                     <td>${formatDate(item.issue_date || item.created_at)}</td>
-                    <td>${formatCurrency(item.total_amount, item.currency || "PEN")}</td>
+                    <td>${formatCurrency(item.total_amount, analytics.currencyOf(item))}</td>
                     <td>${escapeHTML(
                         invoiceStatusLabels[item.ocr_status] ||
                         item.ocr_status ||
@@ -1974,7 +1988,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (error) throw error;
 
-        priceHistory = data || [];
+        priceHistory = analytics.recentOffers(data || [], invoices);
 
         renderPriceComparison();
 
@@ -2033,7 +2047,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         filtered.forEach(record => {
 
-            const key = String(record.product_id);
+            const key = `${record.product_id}|${record.currency}`;
 
             if (!grouped.has(key)) {
                 grouped.set(key, []);
@@ -2045,7 +2059,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const html = [];
 
-        grouped.forEach((records, productId) => {
+        grouped.forEach((records) => {
+
+            const productId = records[0].product_id;
 
             const product = products.find(
                 item => String(item.id) === productId
@@ -2061,14 +2077,15 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <article class="comparison-card">
                     <div class="comparison-card-header">
                         <h3>${escapeHTML(product?.name || "Producto")}</h3>
-                        <span>${escapeHTML(product?.unit || "")}</span>
+                        <span>${escapeHTML(product?.unit || "")} · ${escapeHTML(records[0].currency)}</span>
                     </div>
 
                     <p class="comparison-best-price">
-                        Mejor precio registrado:
-                        <strong>${formatCurrency(cheapest.unit_price)}</strong>
+                        Menor referencia reciente:
+                        <strong>${formatCurrency(cheapest.unit_price, cheapest.currency)}</strong>
                     </p>
 
+                    <p>Coste final por unidad en tus compras confirmadas de los últimos 30 días. ${records.length < 2 ? 'Falta otro proveedor para comparar.' : 'Las alertas señalan diferencias desde el 15% frente a la menor referencia del grupo.'} Confirma presentación, marca, condiciones, stock y precio vigente antes de comprar.</p>
                     <div class="comparison-price-list">
                         ${ordered.map(record => {
 
@@ -2079,8 +2096,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                             return `
                                 <div class="comparison-price-row">
                                     <span>${escapeHTML(supplier?.name || "Proveedor no disponible")}</span>
-                                    <strong>${formatCurrency(record.unit_price)}</strong>
+                                    <strong>${formatCurrency(record.unit_price, record.currency)}</strong>
                                     <small>${formatDate(record.recorded_at)}</small>
+                                    ${ordered.length > 1 && Number(record.unit_price) >= Number(cheapest.unit_price) * 1.15 ? `<small class="price-alert">⚠ ${(100*(Number(record.unit_price)/Number(cheapest.unit_price)-1)).toFixed(1)}% por encima de la menor compra reciente</small>` : ''}
                                 </div>
                             `;
 

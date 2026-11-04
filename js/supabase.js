@@ -37,6 +37,23 @@
 
     let supabaseClient = null;
     let initializationError = null;
+    let authCapabilitiesRequest = null;
+
+    async function readAuthCapabilities() {
+        try {
+            const response = await fetch(`${SUPABASE_URL}/auth/v1/settings`, {
+                headers: { apikey: SUPABASE_PUBLISHABLE_KEY },
+                signal: AbortSignal.timeout(10000)
+            });
+            if (!response.ok) return { known: false, google: false };
+            const settings = await response.json();
+            if (!settings.external || typeof settings.external !== "object") return { known: false, google: false };
+            return { known: true, google: settings.external.google === true };
+        } catch {
+            // La disponibilidad pública no sustituye la verificación del login.
+            return { known: false, google: false };
+        }
+    }
 
 
     // ========================================================
@@ -195,6 +212,11 @@
 
         getProjectURL() {
             return SUPABASE_URL;
+        },
+
+        getAuthCapabilities({ refresh = false } = {}) {
+            if (!authCapabilitiesRequest || refresh) authCapabilitiesRequest = readAuthCapabilities();
+            return authCapabilitiesRequest;
         },
 
         getInitializationError() {

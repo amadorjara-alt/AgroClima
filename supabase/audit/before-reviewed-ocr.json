@@ -1,0 +1,728 @@
+{
+  "buckets": [
+    {
+      "id": "invoices",
+      "public": false,
+      "file_size_limit": 10485760,
+      "allowed_mime_types": [
+        "application/pdf",
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+      ]
+    }
+  ],
+  "indexes": [
+    {
+      "indexdef": "CREATE UNIQUE INDEX businesses_pkey ON public.businesses USING btree (id)",
+      "indexname": "businesses_pkey",
+      "tablename": "businesses",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX idx_businesses_user ON public.businesses USING btree (user_id)",
+      "indexname": "idx_businesses_user",
+      "tablename": "businesses",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX products_pkey ON public.products USING btree (id)",
+      "indexname": "products_pkey",
+      "tablename": "products",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX idx_products_user ON public.products USING btree (user_id)",
+      "indexname": "idx_products_user",
+      "tablename": "products",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX invoice_items_pkey ON public.invoice_items USING btree (id)",
+      "indexname": "invoice_items_pkey",
+      "tablename": "invoice_items",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX idx_invoice_items_user ON public.invoice_items USING btree (user_id)",
+      "indexname": "idx_invoice_items_user",
+      "tablename": "invoice_items",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX price_history_pkey ON public.price_history USING btree (id)",
+      "indexname": "price_history_pkey",
+      "tablename": "price_history",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX idx_price_history_product ON public.price_history USING btree (product_id)",
+      "indexname": "idx_price_history_product",
+      "tablename": "price_history",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX suppliers_pkey ON public.suppliers USING btree (id)",
+      "indexname": "suppliers_pkey",
+      "tablename": "suppliers",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX idx_suppliers_user ON public.suppliers USING btree (user_id)",
+      "indexname": "idx_suppliers_user",
+      "tablename": "suppliers",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX idx_suppliers_user_id ON public.suppliers USING btree (user_id)",
+      "indexname": "idx_suppliers_user_id",
+      "tablename": "suppliers",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX idx_suppliers_business_id ON public.suppliers USING btree (business_id)",
+      "indexname": "idx_suppliers_business_id",
+      "tablename": "suppliers",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX idx_suppliers_name ON public.suppliers USING btree (name)",
+      "indexname": "idx_suppliers_name",
+      "tablename": "suppliers",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX idx_suppliers_ruc ON public.suppliers USING btree (ruc)",
+      "indexname": "idx_suppliers_ruc",
+      "tablename": "suppliers",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX invoices_pkey ON public.invoices USING btree (id)",
+      "indexname": "invoices_pkey",
+      "tablename": "invoices",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX idx_invoices_user ON public.invoices USING btree (user_id)",
+      "indexname": "idx_invoices_user",
+      "tablename": "invoices",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX idx_invoices_business ON public.invoices USING btree (business_id)",
+      "indexname": "idx_invoices_business",
+      "tablename": "invoices",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX idx_invoices_created ON public.invoices USING btree (created_at DESC)",
+      "indexname": "idx_invoices_created",
+      "tablename": "invoices",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE INDEX idx_invoices_supplier ON public.invoices USING btree (supplier_id)",
+      "indexname": "idx_invoices_supplier",
+      "tablename": "invoices",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX integration_credentials_pkey ON public.integration_credentials USING btree (id)",
+      "indexname": "integration_credentials_pkey",
+      "tablename": "integration_credentials",
+      "schemaname": "public",
+      "tablespace": null
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX integration_credentials_user_provider_unique ON public.integration_credentials USING btree (user_id, provider)",
+      "indexname": "integration_credentials_user_provider_unique",
+      "tablename": "integration_credentials",
+      "schemaname": "public",
+      "tablespace": null
+    }
+  ],
+  "policies": [
+    {
+      "cmd": "SELECT",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "businesses",
+      "permissive": "PERMISSIVE",
+      "policyname": "businesses_select",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "businesses",
+      "permissive": "PERMISSIVE",
+      "policyname": "businesses_insert",
+      "schemaname": "public",
+      "with_check": "(( SELECT auth.uid() AS uid) = user_id)"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "businesses",
+      "permissive": "PERMISSIVE",
+      "policyname": "businesses_update",
+      "schemaname": "public",
+      "with_check": "(( SELECT auth.uid() AS uid) = user_id)"
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "businesses",
+      "permissive": "PERMISSIVE",
+      "policyname": "businesses_delete",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "suppliers",
+      "permissive": "PERMISSIVE",
+      "policyname": "suppliers_select",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "suppliers",
+      "permissive": "PERMISSIVE",
+      "policyname": "suppliers_insert",
+      "schemaname": "public",
+      "with_check": "(( SELECT auth.uid() AS uid) = user_id)"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "suppliers",
+      "permissive": "PERMISSIVE",
+      "policyname": "suppliers_update",
+      "schemaname": "public",
+      "with_check": "(( SELECT auth.uid() AS uid) = user_id)"
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "suppliers",
+      "permissive": "PERMISSIVE",
+      "policyname": "suppliers_delete",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "products",
+      "permissive": "PERMISSIVE",
+      "policyname": "products_select",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "products",
+      "permissive": "PERMISSIVE",
+      "policyname": "products_insert",
+      "schemaname": "public",
+      "with_check": "(( SELECT auth.uid() AS uid) = user_id)"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "products",
+      "permissive": "PERMISSIVE",
+      "policyname": "products_update",
+      "schemaname": "public",
+      "with_check": "(( SELECT auth.uid() AS uid) = user_id)"
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "products",
+      "permissive": "PERMISSIVE",
+      "policyname": "products_delete",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "invoices",
+      "permissive": "PERMISSIVE",
+      "policyname": "invoices_select",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "invoices",
+      "permissive": "PERMISSIVE",
+      "policyname": "invoices_insert",
+      "schemaname": "public",
+      "with_check": "(( SELECT auth.uid() AS uid) = user_id)"
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "((user_id = auth.uid()) AND (EXISTS ( SELECT 1\n   FROM businesses b\n  WHERE ((b.id = suppliers.business_id) AND (b.user_id = auth.uid())))))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "suppliers",
+      "permissive": "PERMISSIVE",
+      "policyname": "suppliers_delete_policy",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "invoices",
+      "permissive": "PERMISSIVE",
+      "policyname": "invoices_update",
+      "schemaname": "public",
+      "with_check": "(( SELECT auth.uid() AS uid) = user_id)"
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "invoices",
+      "permissive": "PERMISSIVE",
+      "policyname": "invoices_delete",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "invoice_items",
+      "permissive": "PERMISSIVE",
+      "policyname": "invoice_items_select",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "invoice_items",
+      "permissive": "PERMISSIVE",
+      "policyname": "invoice_items_insert",
+      "schemaname": "public",
+      "with_check": "(( SELECT auth.uid() AS uid) = user_id)"
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "objects",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can upload own invoices",
+      "schemaname": "storage",
+      "with_check": "((bucket_id = 'invoices'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "invoice_items",
+      "permissive": "PERMISSIVE",
+      "policyname": "invoice_items_update",
+      "schemaname": "public",
+      "with_check": "(( SELECT auth.uid() AS uid) = user_id)"
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "invoice_items",
+      "permissive": "PERMISSIVE",
+      "policyname": "invoice_items_delete",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "price_history",
+      "permissive": "PERMISSIVE",
+      "policyname": "price_history_select",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "price_history",
+      "permissive": "PERMISSIVE",
+      "policyname": "price_history_insert",
+      "schemaname": "public",
+      "with_check": "(( SELECT auth.uid() AS uid) = user_id)"
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "((bucket_id = 'invoices'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "objects",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can view own invoices",
+      "schemaname": "storage",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "price_history",
+      "permissive": "PERMISSIVE",
+      "policyname": "price_history_update",
+      "schemaname": "public",
+      "with_check": "(( SELECT auth.uid() AS uid) = user_id)"
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "(( SELECT auth.uid() AS uid) = user_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "price_history",
+      "permissive": "PERMISSIVE",
+      "policyname": "price_history_delete",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "((user_id = auth.uid()) AND (EXISTS ( SELECT 1\n   FROM businesses b\n  WHERE ((b.id = suppliers.business_id) AND (b.user_id = auth.uid())))))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "suppliers",
+      "permissive": "PERMISSIVE",
+      "policyname": "suppliers_select_policy",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "suppliers",
+      "permissive": "PERMISSIVE",
+      "policyname": "suppliers_insert_policy",
+      "schemaname": "public",
+      "with_check": "((user_id = auth.uid()) AND (EXISTS ( SELECT 1\n   FROM businesses b\n  WHERE ((b.id = suppliers.business_id) AND (b.user_id = auth.uid())))))"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "((user_id = auth.uid()) AND (EXISTS ( SELECT 1\n   FROM businesses b\n  WHERE ((b.id = suppliers.business_id) AND (b.user_id = auth.uid())))))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "suppliers",
+      "permissive": "PERMISSIVE",
+      "policyname": "suppliers_update_policy",
+      "schemaname": "public",
+      "with_check": "((user_id = auth.uid()) AND (EXISTS ( SELECT 1\n   FROM businesses b\n  WHERE ((b.id = suppliers.business_id) AND (b.user_id = auth.uid())))))"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "((bucket_id = 'invoices'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "objects",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can update own invoices",
+      "schemaname": "storage",
+      "with_check": null
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "((bucket_id = 'invoices'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "objects",
+      "permissive": "PERMISSIVE",
+      "policyname": "Users can delete own invoices",
+      "schemaname": "storage",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "(user_id = ( SELECT auth.uid() AS uid))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "invoices",
+      "permissive": "PERMISSIVE",
+      "policyname": "invoices_select_own",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "invoices",
+      "permissive": "PERMISSIVE",
+      "policyname": "invoices_insert_own",
+      "schemaname": "public",
+      "with_check": "((user_id = ( SELECT auth.uid() AS uid)) AND (EXISTS ( SELECT 1\n   FROM businesses b\n  WHERE ((b.id = invoices.business_id) AND (b.user_id = ( SELECT auth.uid() AS uid))))))"
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "(user_id = ( SELECT auth.uid() AS uid))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "invoices",
+      "permissive": "PERMISSIVE",
+      "policyname": "invoices_update_own",
+      "schemaname": "public",
+      "with_check": "(user_id = ( SELECT auth.uid() AS uid))"
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "(user_id = ( SELECT auth.uid() AS uid))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "invoices",
+      "permissive": "PERMISSIVE",
+      "policyname": "invoices_delete_own",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "objects",
+      "permissive": "PERMISSIVE",
+      "policyname": "invoices_storage_insert",
+      "schemaname": "storage",
+      "with_check": "((bucket_id = 'invoices'::text) AND ((storage.foldername(name))[1] = (( SELECT auth.uid() AS uid))::text))"
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "((bucket_id = 'invoices'::text) AND ((storage.foldername(name))[1] = (( SELECT auth.uid() AS uid))::text))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "objects",
+      "permissive": "PERMISSIVE",
+      "policyname": "invoices_storage_select",
+      "schemaname": "storage",
+      "with_check": null
+    },
+    {
+      "cmd": "UPDATE",
+      "qual": "((bucket_id = 'invoices'::text) AND ((storage.foldername(name))[1] = (( SELECT auth.uid() AS uid))::text))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "objects",
+      "permissive": "PERMISSIVE",
+      "policyname": "invoices_storage_update",
+      "schemaname": "storage",
+      "with_check": "((bucket_id = 'invoices'::text) AND ((storage.foldername(name))[1] = (( SELECT auth.uid() AS uid))::text))"
+    },
+    {
+      "cmd": "DELETE",
+      "qual": "((bucket_id = 'invoices'::text) AND ((storage.foldername(name))[1] = (( SELECT auth.uid() AS uid))::text))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "objects",
+      "permissive": "PERMISSIVE",
+      "policyname": "invoices_storage_delete",
+      "schemaname": "storage",
+      "with_check": null
+    }
+  ],
+  "routines": [
+    {
+      "name": "set_integration_secret",
+      "security_definer": true
+    },
+    {
+      "name": "get_integration_status",
+      "security_definer": true
+    }
+  ],
+  "vault_grants": [
+    {
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "table_name": "integration_credentials",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "table_catalog": "postgres",
+      "privilege_type": "INSERT",
+      "with_hierarchy": "NO"
+    },
+    {
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "table_name": "integration_credentials",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "table_catalog": "postgres",
+      "privilege_type": "SELECT",
+      "with_hierarchy": "YES"
+    },
+    {
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "table_name": "integration_credentials",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "table_catalog": "postgres",
+      "privilege_type": "UPDATE",
+      "with_hierarchy": "NO"
+    },
+    {
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "table_name": "integration_credentials",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "table_catalog": "postgres",
+      "privilege_type": "DELETE",
+      "with_hierarchy": "NO"
+    },
+    {
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "table_name": "integration_credentials",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "table_catalog": "postgres",
+      "privilege_type": "TRUNCATE",
+      "with_hierarchy": "NO"
+    },
+    {
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "table_name": "integration_credentials",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "table_catalog": "postgres",
+      "privilege_type": "REFERENCES",
+      "with_hierarchy": "NO"
+    },
+    {
+      "grantee": "service_role",
+      "grantor": "postgres",
+      "table_name": "integration_credentials",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "table_catalog": "postgres",
+      "privilege_type": "TRIGGER",
+      "with_hierarchy": "NO"
+    }
+  ]
+}

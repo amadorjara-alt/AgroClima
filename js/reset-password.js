@@ -26,9 +26,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
   if (!client || !form) {
+    if (button) button.disabled = true;
+    form?.addEventListener("submit", event => event.preventDefault());
     showMessage("No se pudo inicializar el servicio de autenticación.", "error");
     return;
   }
+  button.disabled = false;
   form.addEventListener("submit", async event => {
     event.preventDefault();
     if (password.value.length < 8) {

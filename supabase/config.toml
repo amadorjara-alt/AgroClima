@@ -1,2 +1,5 @@
 [functions.manage-integration]
 verify_jwt = true
+
+[functions.process-invoice]
+verify_jwt = true

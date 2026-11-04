@@ -229,6 +229,19 @@
         </section>
 
 
+        <section class="integration-section">
+            <div class="section-heading"><div><span class="section-overline">COMPROBANTES</span><h2>OCR gratuito del proyecto</h2><p>OCR.space es el proveedor utilizado para extraer texto. No requiere Google ni Gemini.</p></div></div>
+            <div class="integration-grid">
+                <article class="integration-card" data-card="ocrspace">
+                    <div class="card-top"><div class="service-icon"><i class="fa-solid fa-file-invoice"></i></div><span class="status pending" id="status-ocrspace">Pendiente de configurar</span></div>
+                    <h3>OCR.space Free</h3>
+                    <p>PDF, JPG y PNG de hasta 900 KB; PDF de hasta tres páginas. La aplicación limita los escaneos a 20 por usuario y 200 en total cada 24 horas para cuidar la cuota gratuita.</p>
+                    <p><a href="https://ocr.space/ocrapi" target="_blank" rel="noopener noreferrer">Solicitar una clave gratuita de OCR.space</a>. Introduce la clave aquí; no la compartas en el chat ni en GitHub.</p>
+                    <div class="card-footer"><span>Servicio: OCR API, motor 2</span><button class="configure-button" data-integration="ocrspace" type="button">Configurar <i class="fa-solid fa-arrow-right"></i></button></div>
+                </article>
+            </div>
+        </section>
+
         <!-- INTELIGENCIA ARTIFICIAL -->
 
         <section class="integration-section">
@@ -243,8 +256,8 @@
                     <h2>Asistentes de IA</h2>
 
                     <p>
-                        Configura los modelos que analizarán
-                        los documentos y datos de tu negocio.
+                        Configuraciones opcionales conservadas de versiones anteriores.
+                        Estas credenciales no se utilizan en el OCR de este proyecto.
                     </p>
                 </div>
 
@@ -271,9 +284,8 @@
                     <h3>Google Gemini</h3>
 
                     <p>
-                        Procesamiento de facturas, reconocimiento
-                        de información, extracción de productos
-                        y análisis de precios.
+                        Configuración conservada de la versión anterior.
+                        El procesamiento actual de comprobantes utiliza OCR.space.
                     </p>
 
                     <div class="card-footer">
@@ -616,6 +628,8 @@
             </div>
 
 
+            <button type="button" id="deleteIntegration" class="cancel-button" hidden>Eliminar credencial guardada</button>
+
             <div class="modal-actions">
 
                 <button type="button"
@@ -655,7 +669,7 @@
      LIBRERÍAS Y JAVASCRIPT
 =========================================== -->
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 
 <script src="js/supabase.js" defer></script>
 <script src="js/main.js" defer></script>

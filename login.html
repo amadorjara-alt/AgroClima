@@ -185,30 +185,14 @@
 
                     </div>
 
-                    <!-- MANTENER SESIÓN -->
-                    <div class="auth-options">
-
-                        <label class="remember-option">
-
-                            <input
-                                type="checkbox"
-                                id="rememberSession"
-                                name="rememberSession"
-                                checked
-                            >
-
-                            <span>Mantener mi sesión iniciada</span>
-
-                        </label>
-
-                    </div>
+                    <p class="field-help">La sesión se mantiene en este navegador. Usa Cerrar sesión para salir de tu cuenta.</p>
 
                     <!-- INICIAR SESIÓN -->
                     <button
                         type="submit"
                         class="auth-submit"
                         id="loginButton"
-                    >
+                     disabled>
 
                         <span class="button-text">
                             Iniciar sesión
@@ -227,6 +211,12 @@
                     ></p>
 
                 </form>
+
+                <div class="auth-divider"><span>O accede con tu cuenta de Google</span></div>
+                <button type="button" class="auth-google" id="googleLoginButton" disabled>
+                    <span aria-hidden="true">G</span> Continuar con Google
+                </button>
+                <p id="googleLoginAvailability" class="field-help" role="status" aria-live="polite"></p>
 
                 <!-- REGISTRO -->
                 <div class="auth-divider">
@@ -259,7 +249,7 @@
     </main>
 
     <!-- SUPABASE -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
     <!-- CONFIGURACIÓN -->
     <script src="js/supabase.js" defer></script>
