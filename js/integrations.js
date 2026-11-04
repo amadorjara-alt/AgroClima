@@ -100,6 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ========================================================
 
     const integrationStates = {};
+    const integrationMetadata = {};
 
     Object.keys(providers).forEach(id => {
         integrationStates[id] = "pending";
@@ -121,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const total = Object.keys(providers).length;
 
         const configured = Object.values(integrationStates)
-            .filter(state => state === "verified").length;
+            .filter(state => state === "configured" || state === "verified").length;
 
         const pending = total - configured;
 
@@ -216,6 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const validStates = [
             "pending",
+            "configured",
             "verified",
             "error"
         ];
@@ -244,6 +246,9 @@ document.addEventListener("DOMContentLoaded", () => {
             statusElement.textContent =
                 message || "Conexión verificada";
 
+        } else if (state === "configured") {
+            statusElement.classList.add("pending");
+            statusElement.textContent = message || "Configurada · conexión pendiente de prueba";
         } else if (state === "error") {
 
             statusElement.classList.add("error");
@@ -302,10 +307,14 @@ document.addEventListener("DOMContentLoaded", () => {
         elements.provider.value = providerId;
 
         if (elements.model) {
-            elements.model.value = provider.model;
+            elements.model.value = integrationMetadata[providerId]?.model || provider.model;
         }
 
         elements.apiKey.type = "password";
+        elements.apiKey.required = !integrationMetadata[providerId];
+        elements.apiKey.placeholder = integrationMetadata[providerId] ? "Guardada: deja vacío para conservarla" : "Introduce tu clave API";
+        const deleteButton = $("deleteIntegration");
+        if (deleteButton) deleteButton.hidden = !integrationMetadata[providerId];
 
         if (elements.toggleKey) {
 
@@ -465,7 +474,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (!apiKey) {
-            return "Introduce la clave API del proveedor.";
+            return integrationMetadata[providerId] ? null : "Introduce la clave API del proveedor.";
         }
 
         if (apiKey.length < 8) {
@@ -585,7 +594,8 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             await invokeCredentialVault({ action: "save", provider: providerId, apiKey, model });
             elements.apiKey.value = "";
-            updateProviderStatus(providerId, "verified", "Guardada de forma segura");
+            integrationMetadata[providerId] = { provider: providerId, model };
+            updateProviderStatus(providerId, "configured", "Configurada · conexión pendiente de prueba");
             showModalMessage("La clave se guardó cifrada en el servidor. No se conserva en este navegador.", "success");
             notify(`${providers[providerId].name}: configuración guardada de forma segura.`, "success");
             window.setTimeout(closeModal, 1100);
@@ -601,10 +611,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const saved = Array.isArray(result.integrations) ? result.integrations : [];
             Object.keys(providers).forEach(id => {
                 const item = saved.find(entry => entry.provider === id);
+                if (item) integrationMetadata[id] = item;
+                else delete integrationMetadata[id];
                 updateProviderStatus(
                     id,
-                    item ? "verified" : "pending",
-                    item ? "Guardada de forma segura" : "Pendiente de configuración"
+                    item ? "configured" : "pending",
+                    item ? "Configurada · conexión pendiente de prueba" : "Pendiente de configuración"
                 );
             });
         } catch (error) {
@@ -612,6 +624,22 @@ document.addEventListener("DOMContentLoaded", () => {
             Object.keys(providers).forEach(id => updateProviderStatus(id, "pending", "Servidor seguro no configurado"));
         }
     }
+
+    $("deleteIntegration")?.addEventListener("click", async () => {
+        const providerId = elements.provider.value;
+        if (!providers[providerId] || !integrationMetadata[providerId]) return;
+        if (!window.confirm(`¿Eliminar la clave guardada de ${providers[providerId].name}? Necesitarás guardar otra clave para volver a utilizar el servicio.`)) return;
+        const button = $("deleteIntegration");
+        button.disabled = true;
+        try {
+            await invokeCredentialVault({ action: "delete", provider: providerId });
+            delete integrationMetadata[providerId];
+            updateProviderStatus(providerId, "pending");
+            closeModal();
+            notify("Credencial eliminada del servidor.", "success");
+        } catch (error) { showModalMessage(error.message, "error"); }
+        finally { button.disabled = false; }
+    });
 
     // La carga de estados se ejecuta después de establecer los estados iniciales.
 
@@ -779,6 +807,7 @@ document.addEventListener("DOMContentLoaded", () => {
             window.setTimeout(() => loadSavedIntegrations(), 0);
             window.setTimeout(() => loadUserProfile(), 0);
         } else if (event === "SIGNED_OUT") {
+            Object.keys(integrationMetadata).forEach(id => delete integrationMetadata[id]);
             Object.keys(providers).forEach(providerId => {
                 updateProviderStatus(providerId, "pending", "Pendiente de configuración");
             });

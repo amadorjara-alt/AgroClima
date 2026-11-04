@@ -1,4 +1,5 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.118.0";
+import { encryptSecret, validateCredentialChange } from "../_shared/credentials.mjs";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": Deno.env.get("APP_ORIGIN") || "*",
@@ -13,25 +14,6 @@ const json = (body: Record<string, unknown>, status = 200) =>
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" },
   });
-
-function decodeBase64(value: string): Uint8Array {
-  const binary = atob(value);
-  return Uint8Array.from(binary, (character) => character.charCodeAt(0));
-}
-
-function encodeBase64(value: Uint8Array): string {
-  let binary = "";
-  value.forEach((byte) => binary += String.fromCharCode(byte));
-  return btoa(binary);
-}
-
-async function encryptionKey(): Promise<CryptoKey> {
-  const encoded = Deno.env.get("CREDENTIALS_ENCRYPTION_KEY");
-  if (!encoded) throw new Error("Falta configurar CREDENTIALS_ENCRYPTION_KEY en los secretos de Supabase.");
-  const raw = decodeBase64(encoded);
-  if (raw.length !== 32) throw new Error("CREDENTIALS_ENCRYPTION_KEY debe contener exactamente 32 bytes codificados en Base64.");
-  return await crypto.subtle.importKey("raw", raw, { name: "AES-GCM" }, false, ["encrypt"]);
-}
 
 Deno.serve(async (request: Request) => {
   if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -87,21 +69,28 @@ Deno.serve(async (request: Request) => {
     const apiKey = String(body?.apiKey || "").trim();
     const model = String(body?.model || "").trim().slice(0, 100);
     if (!allowedProviders.has(provider)) return json({ success: false, error: "Proveedor no válido." }, 400);
-    if (apiKey.length < 8 || apiKey.length > 4096) return json({ success: false, error: "La clave API no tiene una longitud válida." }, 400);
-
-    const key = await encryptionKey();
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const encrypted = await crypto.subtle.encrypt(
-      { name: "AES-GCM", iv },
-      key,
-      new TextEncoder().encode(apiKey),
-    );
+    // Una edición de modelo sin clave mantiene el cifrado y el IV originales.
+    if (!apiKey) {
+      const { data: existing, error: readError } = await admin.from("integration_credentials")
+        .select("model").eq("user_id", userData.user.id).eq("provider", provider).maybeSingle();
+      if (readError) throw new Error("No se pudo consultar la credencial guardada.");
+      try { validateCredentialChange(apiKey, Boolean(existing)); }
+      catch (error) { return json({ success: false, error: error instanceof Error ? error.message : "Cambio de credencial no válido." }, 400); }
+      const { error: updateError } = await admin.from("integration_credentials")
+        .update({ model: model || existing?.model || null, updated_at: new Date().toISOString() })
+        .eq("user_id", userData.user.id).eq("provider", provider);
+      if (updateError) throw new Error("No se pudo actualizar el modelo de la integración.");
+      return json({ success: true, provider, saved: true, credential_changed: false });
+    }
+    try { validateCredentialChange(apiKey, false); }
+    catch (error) { return json({ success: false, error: error instanceof Error ? error.message : "Cambio de credencial no válido." }, 400); }
+    const encrypted = await encryptSecret(apiKey, Deno.env.get("CREDENTIALS_ENCRYPTION_KEY"));
 
     const { error: saveError } = await admin.from("integration_credentials").upsert({
       user_id: userData.user.id,
       provider,
-      encrypted_key: encodeBase64(new Uint8Array(encrypted)),
-      iv: encodeBase64(iv),
+      encrypted_key: encrypted.encrypted_key,
+      iv: encrypted.iv,
       model: model || null,
       updated_at: new Date().toISOString(),
     }, { onConflict: "user_id,provider" });
