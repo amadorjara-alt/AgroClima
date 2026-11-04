@@ -1,0 +1,20 @@
+/* Confirmación y avisos del reinicio de historial. */
+.history-reset-button { color:#a52e2a; border-color:#edcfcc; background:#fff8f7; white-space:nowrap; }
+.history-reset-button:hover { color:#8b1e1a; border-color:#c8837d; background:#ffefed; }
+.history-reset-button:disabled, .history-reset-confirm:disabled { opacity:.5; cursor:not-allowed; }
+.history-reset-dialog { width:min(520px,calc(100vw - 32px)); max-height:calc(100dvh - 40px); overflow-y:auto; margin:auto; padding:28px; border:1px solid #e3ede6; border-radius:16px; color:#203d30; background:#fff; box-shadow:0 24px 90px #102b2533; }
+.history-reset-dialog::backdrop { background:#102b25a6; }
+.history-reset-dialog form { display:grid; gap:14px; }
+.history-reset-dialog h2, .history-reset-dialog p { margin:0; }
+.history-reset-dialog h2 { font-size:22px; }
+.history-reset-dialog p { font-size:14px; line-height:1.6; }
+.history-reset-dialog label { font-size:14px; }
+.history-reset-dialog input { min-height:44px; padding:10px 12px; border:1px solid #bbcfc3; border-radius:8px; font:inherit; width:100%; }
+.history-reset-dialog input:focus-visible, .history-reset-button:focus-visible, .history-reset-confirm:focus-visible { outline:3px solid #87b9a1; outline-offset:3px; }
+.history-reset-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:10px; }
+.history-reset-confirm { min-height:40px; padding:9px 15px; border:1px solid #a52e2a; border-radius:9px; color:#fff; background:#a52e2a; font:inherit; font-size:12px; font-weight:700; }
+#historyResetNotice:empty { display:none; }
+#historyResetNotice { margin:0 0 16px; }
+#cleanupHistoryFilesButton { margin:0 0 18px; }
+@media(max-width:600px) { .page-heading .history-reset-button { width:100%; } .history-reset-dialog { padding:20px; } }
+#cleanupHistoryFilesButton[hidden] { display:none !important; }

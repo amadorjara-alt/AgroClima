@@ -39,6 +39,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     let categoryDistributionChart = null;
     let invoiceStatusChart = null;
     let checkingIntegrations = false;
+    let historyResetController = null;
+    let resettingHistory = false;
 
     const state = {
         initialized: false,
@@ -1225,6 +1227,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         renderInvoices();
         renderIntegrationHistory();
+        historyResetController?.refresh();
 
     }
 
@@ -1346,6 +1349,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (window.CompraSmartInvoiceReview && invoiceId) {
             window.CompraSmartInvoiceReview.mount({container:elements.invoiceOcrContent,invoiceId,draft:data,onConfirm:async(id,values)=>{
+                if(resettingHistory)throw new Error('Espera a que termine el reinicio del historial.');
                 const {data:result,error}=await supabase.rpc('confirm_invoice_data',{p_invoice_id:id,p_data:values});
                 if(error)throw error;
                 if(!result?.success)throw new Error('El servidor no confirmó el guardado.');
@@ -1539,7 +1543,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         button?.addEventListener("click", () => {
 
-            if (uploadingInvoice) return;
+            if (uploadingInvoice || resettingHistory) return;
 
             elements.invoiceInput?.click();
 
@@ -1551,7 +1555,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const file = elements.invoiceInput.files?.[0];
 
-        if (!file || uploadingInvoice) return;
+        if (!file || uploadingInvoice || resettingHistory) return;
 
         uploadingInvoice = true;
 
@@ -1618,7 +1622,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             "[data-invoice-action]"
         );
 
-        if (!button) return;
+        if (!button || resettingHistory) return;
 
         const invoice = invoices.find(
             item => String(item.id) === button.dataset.id
@@ -2314,6 +2318,32 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (!authenticated) return;
 
+        if (window.CompraSmartHistoryReset) {
+            historyResetController = window.CompraSmartHistoryReset.mount({
+                client: supabase,
+                button: $("resetHistoryButton"),
+                dialog: $("resetHistoryDialog"),
+                cleanupButton: $("cleanupHistoryFilesButton"),
+                notice: $("historyResetNotice"),
+                userId: currentUser.id,
+                businessId: currentBusiness.id,
+                businessName: currentBusiness.business_name,
+                getInvoiceIds: () => invoices.map(invoice => invoice.id),
+                isUploading: () => uploadingInvoice,
+                onBusyChange(value) {
+                    resettingHistory = value;
+                    uploadButtons.forEach(button => { if (button) button.disabled = value || uploadingInvoice; });
+                    if (elements.invoiceInput) elements.invoiceInput.disabled = value;
+                },
+                async onReset() {
+                    if (elements.invoiceOcr) elements.invoiceOcr.hidden = true;
+                    elements.invoiceOcrContent?.replaceChildren();
+                    await loadInvoices();
+                    await Promise.all([loadDashboardMetrics(), loadHistory(), loadPriceHistory()]);
+                }
+            });
+        }
+
         await Promise.all([
             loadSuppliers(),
             loadProducts(),
@@ -2324,7 +2354,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             loadDashboardMetrics(),
             loadHistory(),
             loadPriceHistory(),
-            loadIntegrationStatus()
+            loadIntegrationStatus(),
+            historyResetController?.checkPendingFiles()
         ]);
 
         state.initialized = true;

@@ -50,3 +50,15 @@ Ambas funciones nuevas están activas, RLS y confirmación pasaron pruebas reale
 ## Comprobación posterior
 
 El proyecto ya registra lecturas de OCR.space y una compra confirmada. Las instrucciones de clave anteriores sirven para configurar o sustituirla, no implican que siga faltando. El resumen diferencia una clave guardada de una lectura realmente registrada.
+
+## Reiniciar el historial (4 de noviembre de 2026)
+
+En **Historial de compras → Reiniciar historial**, el usuario ve el negocio y la cantidad de comprobantes que va a eliminar. Debe escribir `ELIMINAR` y pulsar **Eliminar y reiniciar**. Cancelar o abrir el diálogo no modifica datos.
+
+El reinicio elimina facturas terminadas y borradores, líneas de compra y referencias de precios del negocio actual. Conserva la cuenta, el negocio, el catálogo de productos, los proveedores, las claves y el consumo diario de OCR. Los registros de otros negocios y usuarios se conservan. El servidor comprueba la sesión, la propiedad del negocio y el conjunto exacto de facturas mostrado; rechaza confirmaciones antiguas y OCR activos.
+
+Los archivos se eliminan mediante Storage API después de la transacción de compras. Si falla la conexión, una cola privada conserva las rutas y muestra **Completar limpieza de archivos**, que permite reintentar incluso después de recargar. Nunca se modifica `storage.objects` por SQL.
+
+Pruebas: `tests/history-reset.test.mjs`, integración en `tests/ui.test.mjs` y `supabase/tests/reset-history-rls.sql`. La prueba SQL crea negocios ficticios, comprueba aislamiento entre dos usuarios y dos negocios del mismo propietario, y revierte todas sus filas. Instalar esta función no ejecuta un reinicio sobre los datos del grupo.
+
+Verificación de esta entrega: 67 pruebas automáticas aprobadas, nueve archivos JavaScript verificados, prueba SQL con reversión aprobada y comprobación visual con datos ficticios. La función y la cola rechazan peticiones anónimas con HTTP 401. Los 10 comprobantes y archivos originales, cinco credenciales y dos solicitudes OCR permanecieron intactos tras aplicar la migración y probarla.
