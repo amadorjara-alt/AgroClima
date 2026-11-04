@@ -32,7 +32,7 @@ Las facturas antiguas se conservan tal como estaban. No se les inventan producto
 
 ## OCR y datos
 
-process-invoice versión 6 y manage-integration versión 2 están desplegadas y activas, con verify_jwt habilitado. El servidor también valida la identidad con Supabase Auth y consulta exclusivamente documentos del usuario y negocio autorizados. Sin sesión, ambos endpoints devolvieron HTTP 401.
+process-invoice versión 7 y manage-integration versión 2 están desplegadas y activas, con verify_jwt habilitado. El servidor también valida la identidad con Supabase Auth y consulta exclusivamente documentos del usuario y negocio autorizados. Sin sesión, ambos endpoints devolvieron HTTP 401.
 
 OCR.space recibe un archivo privado por POST y devuelve texto. La aplicación usa el motor 2, valida tamaño, formato y firma del archivo, maneja timeout, errores de cuota y lectura parcial. Las reglas extraen solo lo reconocible; no son un LLM ni garantizan comprender todos los diseños de comprobantes.
 
@@ -46,7 +46,7 @@ El plan Free de OCR.space consultado publica 25.000 solicitudes/mes, 500/día po
 
 ## Pruebas y límites de la evidencia
 
-- 54 pruebas automáticas de cálculos, cifrado, parser, adaptador, Auth, permisos del handler y comportamiento DOM. Los clientes de Supabase y Chart.js de estas pruebas son simulados.
+- 55 pruebas automáticas de cálculos, cifrado, parser, adaptador, Auth, permisos del handler y comportamiento DOM. Los clientes de Supabase y Chart.js de estas pruebas son simulados.
 - Comprobación de sintaxis de ocho archivos JavaScript y empaquetado de ambas funciones TypeScript con sus dependencias locales.
 - Llamada real a OCR.space con la clave pública documentada de demostración y un comprobante ficticio: dos productos, total 118, sin lectura parcial y con revisión requerida. No se guardó esa clave en producción.
 - supabase/tests/purchases-rls.sql pasó en la base real con dos identidades: aislamiento, rechazo de enlaces ajenos, bóveda inaccesible al cliente, confirmación, coste final, idempotencia, duplicados y rechazo sin datos parciales.

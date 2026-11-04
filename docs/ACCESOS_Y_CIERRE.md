@@ -45,4 +45,4 @@ La documentación de la configuración está en https://supabase.com/docs/guides
 
 ## Verificaciones ya ejecutadas
 
-Ambas funciones nuevas están activas, RLS y confirmación pasaron pruebas reales con dos identidades, la API OCR leyó el fixture y 54 pruebas automáticas pasaron. Esto no sustituye la prueba interactiva final con la clave y las cuentas del grupo.
+Ambas funciones nuevas están activas, RLS y confirmación pasaron pruebas reales con dos identidades, la API OCR leyó el fixture y 55 pruebas automáticas pasaron. Esto no sustituye la prueba interactiva final con la clave y las cuentas del grupo.

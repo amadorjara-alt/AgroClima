@@ -67,15 +67,20 @@ export function createInvoiceHandler({createClient, env, fetchImpl = fetch}) {
                 .update({ocr_status:'review',ocr_draft:result.extracted,ocr_error:null,ocr_provider:'ocrspace',processed_at:new Date().toISOString()})
                 .eq('id',row.id).eq('user_id',userId).eq('ocr_request_id',requestId).select('id').maybeSingle();
             if (saveError || !saved) throw new Error('DRAFT_SAVE');
-            await admin.from('ocr_requests').update({outcome:'review'}).eq('id',requestId).eq('user_id',userId);
+            // El borrador ya está guardado: un fallo del registro de intentos
+            // no debe ocultarlo ni cambiar su estado a error.
+            try { await admin.from('ocr_requests').update({outcome:'review'}).eq('id',requestId).eq('user_id',userId); }
+            catch { console.warn('process-invoice: ATTEMPT_STATUS_WRITE'); }
             return reply({success:true,invoice_id:row.id,...result});
         } catch(error) {
             const known=error instanceof OCRProviderError, code=known?error.code:'OCR_INTERNAL_ERROR';
             const message=known?error.message:'No se pudo completar el procesamiento. El archivo permanece guardado; vuelve a intentarlo.';
             if (admin && invoice && requestId) {
-                await admin.from('invoices').update({ocr_status:'failed',ocr_error:code})
-                    .eq('id',invoice.id).eq('user_id',userId).eq('ocr_request_id',requestId);
-                await admin.from('ocr_requests').update({outcome:'failed'}).eq('id',requestId).eq('user_id',userId);
+                try {
+                    await admin.from('invoices').update({ocr_status:'failed',ocr_error:code})
+                        .eq('id',invoice.id).eq('user_id',userId).eq('ocr_request_id',requestId).eq('ocr_status','processing');
+                    await admin.from('ocr_requests').update({outcome:'failed'}).eq('id',requestId).eq('user_id',userId);
+                } catch { console.error('process-invoice: ERROR_STATUS_WRITE'); }
             }
             console.error('process-invoice:',code); // Sin documentos, tokens ni claves.
             return reply({success:false,error:message,code},known?error.status:500);

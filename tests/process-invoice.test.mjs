@@ -17,7 +17,7 @@ function harness(options={}){
     if(table==='businesses')return{data:options.missingBusiness?null:{id:business},error:null};
     if(table==='integration_credentials')return{data:options.credential||null,error:null};
     return{data:null,error:null};},
-   then(resolve,reject){calls.push({table,admin,action,filters:[...filters],data});return Promise.resolve({data:null,error:null}).then(resolve,reject);}
+   then(resolve,reject){calls.push({table,admin,action,filters:[...filters],data});return (options.outcomeError&&table==='ocr_requests'&&data?.outcome==='review'?Promise.reject(Error('sin red al registrar intento')):Promise.resolve({data:null,error:null})).then(resolve,reject);}
   };return q;
  }
  const createClient=(_url,key)=>{
@@ -77,6 +77,10 @@ test('la clave cifrada se lee solo para el propietario y no sale en la respuesta
  assert.equal(r.status,200);assert.equal(h.calls.find(c=>c.url).apiKey,'clave-privada-ficticia');
  assert.ok(h.calls.find(c=>c.table==='integration_credentials').filters.some(([k,v])=>k==='user_id'&&v===user));
  assert.ok(!JSON.stringify(r.body).includes('clave-privada-ficticia'));
+});
+test('un fallo del registro de intentos no descarta un borrador que ya se guardó',async()=>{
+ const h=harness({outcomeError:true}),r=await h.request();assert.equal(r.status,200);assert.equal(r.body.success,true);
+ assert.equal(h.calls.some(c=>c.table==='invoices'&&c.data?.ocr_status==='failed'),false);
 });
 test('un fallo de cifrado no provoca rotación ni usa silenciosamente otra clave',async()=>{
  const h=harness({credential:{encrypted_key:'no-cifrado',iv:'incorrecto'}}),r=await h.request();assert.equal(r.status,503);assert.equal(r.body.code,'OCR_VAULT_ERROR');assert.equal(h.providerCalls(),0);
