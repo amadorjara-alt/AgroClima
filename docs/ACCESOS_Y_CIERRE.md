@@ -30,4 +30,3 @@
 - [Modelo de datos](MODELO_DE_DATOS.md).
 - [Arquitectura y demostración](ARQUITECTURA_Y_DEMO.md).
 - [Correspondencia con la rúbrica](RUBRICA_Y_SUSTENTACION.md).
-

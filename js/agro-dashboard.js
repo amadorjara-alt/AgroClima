@@ -4,9 +4,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   const client = window.supabaseClient;
   if (!client) { location.replace("login.html"); return; }
   const { data: { user }, error: authError } = await client.auth.getUser();
-  if (authError || !user) { location.replace("login.html"); return; }
+  if (authError || !user) {
+    if (typeof window.agroSignOutLocal === "function") await window.agroSignOutLocal();
+    location.replace("login.html?reason=expired");
+    return;
+  }
   if (user.email && !user.email_confirmed_at) {
-    await client.auth.signOut();
+    if (typeof window.agroSignOutLocal === "function") await window.agroSignOutLocal();
     location.replace("login.html?confirm=1");
     return;
   }
@@ -305,9 +309,23 @@ document.addEventListener("DOMContentLoaded", async () => {
       : `<div class="alert-item ok">✓ ${state.farms.length ? "Sin alertas activas en las últimas consultas." : "Registra un terreno para empezar."}</div>`;
   }
 
-  $("signOutButton").addEventListener("click", async () => { const { error } = await client.auth.signOut(); if (error) toast("No se pudo cerrar sesión.", true); else location.replace("login.html"); });
+  $("signOutButton").addEventListener("click", async event => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    button.textContent = "Cerrando sesión…";
+    try {
+      const cleared = typeof window.agroSignOutLocal === "function"
+        ? await window.agroSignOutLocal()
+        : !(await client.auth.signOut({ scope: "local" })).error;
+      if (!cleared) throw new Error("No se pudo limpiar la sesión de este navegador.");
+      location.replace("login.html?logout=1");
+    } catch {
+      button.disabled = false;
+      button.textContent = "↪ Cerrar sesión";
+      toast("No se pudo cerrar sesión. Recarga la página e inténtalo otra vez.", true);
+    }
+  });
 
   try { await loadFarms(); await loadHistory(); if (state.farms.length) { const latestFarm = state.farms[0]; $("weatherFarmSelect").value = latestFarm.id; $("thresholdFarmSelect").value = latestFarm.id; await loadThresholds(); } }
   catch (error) { toast(error.message || "No se pudieron cargar tus terrenos.", true); }
 });
-

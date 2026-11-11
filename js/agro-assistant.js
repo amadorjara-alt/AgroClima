@@ -65,4 +65,3 @@ document.addEventListener("DOMContentLoaded", () => {
   suggestions?.querySelectorAll("button").forEach(button => button.addEventListener("click", () => ask(button.textContent)));
   document.addEventListener("keydown", event => { if (event.key === "Escape" && !panel.hidden) setOpen(false); });
 });
-

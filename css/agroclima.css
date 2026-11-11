@@ -461,4 +461,3 @@ td{color:#4e5f51}
 .dashboard-body .field-grid,.dashboard-body .threshold-grid{position:static!important;transform:none!important;min-width:0;max-width:100%}
 .toast{bottom:84px}
 @media(max-width:700px){.toast{right:12px;bottom:145px}}
-

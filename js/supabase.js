@@ -29,6 +29,7 @@
 
     const SUPABASE_PUBLISHABLE_KEY =
         "sb_publishable_4V5bc5maOIaPuewvSXYLdQ_adHnSKmn";
+    const AUTH_STORAGE_KEY = "sb-fledooqwmwrjufeihoqn-auth-token";
 
 
     // ========================================================
@@ -138,7 +139,8 @@
                     persistSession: true,
                     autoRefreshToken: true,
                     detectSessionInUrl: true,
-                    flowType: "pkce"
+                    flowType: "pkce",
+                    storageKey: AUTH_STORAGE_KEY
                 },
 
                 db: {
@@ -153,6 +155,28 @@
             }
         );
 
+    }
+
+    async function signOutLocal() {
+        if (supabaseClient) {
+            try {
+                const { error } = await supabaseClient.auth.signOut({ scope: "local" });
+                if (!error) return true;
+            } catch {
+                // Si Auth no puede revocar una sesión antigua, se elimina el token local abajo.
+            }
+        }
+
+        let localStorageCleared = false;
+        try {
+            window.localStorage.removeItem(AUTH_STORAGE_KEY);
+            localStorageCleared = true;
+        } catch { /* El navegador puede bloquear localStorage. */ }
+        try {
+            window.sessionStorage.removeItem(AUTH_STORAGE_KEY);
+        } catch { /* El navegador puede bloquear sessionStorage. */ }
+        if (localStorageCleared) window.dispatchEvent(new CustomEvent("agroclima:session-cleared"));
+        return localStorageCleared;
     }
 
 
@@ -175,6 +199,7 @@
         }
 
         window.supabaseClient = supabaseClient;
+        window.agroSignOutLocal = signOutLocal;
 
         console.info(
             "AgroClima: cliente Supabase inicializado."
@@ -187,6 +212,7 @@
         supabaseClient = null;
 
         window.supabaseClient = null;
+        window.agroSignOutLocal = signOutLocal;
 
         console.error(
             "AgroClima: error de inicialización:",
@@ -271,10 +297,11 @@
                 };
             }
 
-            const { error } =
-                await supabaseClient.auth.signOut();
+            const cleared = await signOutLocal();
 
-            return { error };
+            return {
+                error: cleared ? null : new Error("No se pudo limpiar la sesión local.")
+            };
 
         }
 

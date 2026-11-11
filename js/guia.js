@@ -35,4 +35,3 @@ document.addEventListener("DOMContentLoaded", () => {
   checks.forEach(check => check.addEventListener("change", updateProgress));
   updateProgress();
 });
-

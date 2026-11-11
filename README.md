@@ -36,6 +36,8 @@ La configuración del navegador está en `js/supabase.js` y usa la clave públic
 
 La página [`integrations.html`](integrations.html) explica qué servicios requieren claves. Open-Meteo, Nominatim, Leaflet y Chart.js no requieren una clave individual para este proyecto. Gemini es opcional: cada usuario puede guardarla o quitarla desde esa página; Supabase la cifra en el servidor y la clave nunca se entrega al navegador.
 
+La aplicación oficial vive en la raíz. El prototipo anterior y el registro de auditoría se agruparon en [`archive/`](archive/README.md), fuera de la navegación y el despliegue activo.
+
 ## Desarrollo y publicación
 
 Es un sitio estático HTML, CSS y JavaScript. Abrir `index.html` o servir la raíz del repositorio con un servidor estático. GitHub Pages debe publicar la rama `main` desde la carpeta raíz. No se necesita instalar un backend propio.
@@ -53,4 +55,5 @@ Es un sitio estático HTML, CSS y JavaScript. Abrir `index.html` o servir la ra�
 - [Modelo de datos](docs/MODELO_DE_DATOS.md).
 - [Arquitectura, secuencia y guion de demostración](docs/ARQUITECTURA_Y_DEMO.md).
 - [Migración de base de datos](supabase/migrations/20261110090000_agroclima.sql).
-
+- [Estructura del repositorio](docs/ESTRUCTURA_DEL_REPOSITORIO.md).
+- [Resumen del proyecto](docs/RESUMEN_DEL_PROYECTO.md).

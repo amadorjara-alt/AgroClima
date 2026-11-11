@@ -13,7 +13,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!client) { if (message) { message.textContent = "No se pudo conectar con Supabase. Recarga la página."; message.classList.add("error"); } return; }
 
   const { data: { user }, error: authError } = await client.auth.getUser();
-  if (authError || !user) { location.replace("login.html"); return; }
+  if (authError || !user) {
+    if (typeof window.agroSignOutLocal === "function") await window.agroSignOutLocal();
+    location.replace("login.html?reason=expired");
+    return;
+  }
+  if (user.email && !user.email_confirmed_at) {
+    if (typeof window.agroSignOutLocal === "function") await window.agroSignOutLocal();
+    location.replace("login.html?confirm=1");
+    return;
+  }
   const eye = $("toggleGeminiKey");
   $("statusLeaflet").textContent = window.L ? "Cargada · sin clave" : "No cargó";
   $("leafletStatus").textContent = window.L ? "Biblioteca Leaflet cargada en esta página." : "No se pudo cargar Leaflet; revisa la conexión a Internet.";
@@ -143,4 +152,3 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
   await refreshStatus();
 });
-

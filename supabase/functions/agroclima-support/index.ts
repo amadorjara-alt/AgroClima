@@ -117,4 +117,3 @@ Deno.serve(async request => {
     return json(request, { error: "Ocurrió un error temporal al atender tu consulta." }, 500);
   }
 });
-

@@ -37,4 +37,3 @@ La precipitación es un pronóstico real y variable. La demo no simula condicion
 - Integraciones: Open-Meteo, Nominatim, Leaflet y Chart.js.
 
 Cada integrante debe conocer el flujo completo: autenticación → terreno → pronóstico → reglas → historial.
-

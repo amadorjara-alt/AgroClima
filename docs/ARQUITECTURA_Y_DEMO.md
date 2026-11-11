@@ -55,4 +55,3 @@ flowchart LR
 6. Explicar RLS: una sesión solo puede operar sobre sus terrenos y el historial de esos terrenos.
 
 El usuario puede configurar o quitar su clave de Gemini desde `integrations.html`. Open-Meteo, Nominatim, Leaflet y Chart.js no requieren claves para esta implementación.
-
