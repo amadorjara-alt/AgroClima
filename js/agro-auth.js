@@ -17,6 +17,28 @@ document.addEventListener("DOMContentLoaded", async () => {
   } catch { /* Las operaciones siguientes informan el error de autenticación. */ }
 
   const login = $("loginForm");
+  document.querySelectorAll("[data-google-auth]").forEach(button => button.addEventListener("click", async () => {
+    const messageNode = $("loginMessage") || $("registerMessage");
+    const label = button.querySelector("span");
+    const originalLabel = label?.textContent;
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    if (label) label.textContent = "Conectando con Google…";
+    try {
+      const redirectTo = new URL("dashboard.html", location.href).href;
+      const { error } = await client.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo }
+      });
+      if (error) throw error;
+    } catch (error) {
+      message(messageNode, "No se pudo iniciar sesión con Google. Inténtalo de nuevo.", true);
+      button.disabled = false;
+      button.removeAttribute("aria-busy");
+      if (label) label.textContent = originalLabel;
+    }
+  }));
+
   if (login) login.addEventListener("submit", async event => {
     event.preventDefault();
     const button = $("loginButton"); button.disabled = true;
