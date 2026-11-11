@@ -6,3 +6,7 @@ verify_jwt = true
 
 [functions.search-products]
 verify_jwt = true
+
+[functions.agroclima-support]
+verify_jwt = true
+

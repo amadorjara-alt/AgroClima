@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="es">
-<head>
+<head><link rel="icon" href="assets/agroclima-mark.svg" type="image/svg+xml">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f3f7ee">
@@ -13,7 +13,7 @@
 </head>
 <body class="agro-auth">
   <header class="wrap auth-head">
-    <a class="brand" href="index.html"><span class="brand-mark">A</span><span>Agro<span>Clima</span></span></a>
+    <a class="brand" href="index.html"><img class="brand-mark-image" src="assets/agroclima-mark.svg" alt=""><span>Agro<span>Clima</span></span></a>
     <a href="index.html">← Inicio</a>
   </header>
   <main class="wrap auth-layout">
@@ -36,9 +36,9 @@
         <label for="registerEmail">Correo electrónico</label>
         <input id="registerEmail" type="email" autocomplete="email" required>
         <label for="registerPassword">Contraseña</label>
-        <input id="registerPassword" type="password" autocomplete="new-password" minlength="8" required>
+        <div class="password-field"><input id="registerPassword" type="password" autocomplete="new-password" minlength="8" required><button class="password-toggle" type="button" data-toggle-password="registerPassword" aria-label="Mostrar contraseña" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.3-6 9.5-6 9.5 6 9.5 6-3.3 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/><path class="eye-lash" d="m4.6 6.1-1.4-1.4M8 4.4l-.5-2M16 4.4l.5-2M19.4 6.1l1.4-1.4"/><path class="eye-slash" d="M4 20 20 4"/></svg></button></div>
         <label for="confirmPassword">Confirma tu contraseña</label>
-        <input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" required>
+        <div class="password-field"><input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" required><button class="password-toggle" type="button" data-toggle-password="confirmPassword" aria-label="Mostrar contraseña" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.3-6 9.5-6 9.5 6 9.5 6-3.3 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/><path class="eye-lash" d="m4.6 6.1-1.4-1.4M8 4.4l-.5-2M16 4.4l.5-2M19.4 6.1l1.4-1.4"/><path class="eye-slash" d="M4 20 20 4"/></svg></button></div>
         <button id="registerButton" class="button button-green" type="submit">Crear cuenta</button>
         <p id="registerMessage" class="auth-message" role="status" aria-live="polite"></p>
       </form>
@@ -50,3 +50,4 @@
   <script src="js/agro-auth.js" defer></script>
 </body>
 </html>
+

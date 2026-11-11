@@ -1,1 +1,63 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Servicios meteorológicos y bibliotecas del sistema AgroClima."><title>Integraciones | AgroClima</title><link rel="stylesheet" href="css/agroclima.css"></head><body class="agro-auth"><header class="wrap auth-head"><a class="brand" href="index.html"><span class="brand-mark">A</span><span>Agro<span>Clima</span></span></a><a href="index.html">← Inicio</a></header><main class="auth-card" style="width:min(760px,calc(100% - 32px))"><span class="eyebrow">SERVICIOS DEL SISTEMA</span><h1>Integraciones</h1><p>AgroClima combina fuentes meteorológicas y herramientas cartográficas para organizar la información de cada terreno.</p><h2>Open-Meteo</h2><p>Pronóstico diario de temperatura máxima y mínima, precipitación, humedad relativa media y viento máximo.</p><h2>Nominatim · OpenStreetMap</h2><p>Resuelve coordenadas a una localidad aproximada al registrar o ubicar un terreno. El mapa muestra atribución de OpenStreetMap.</p><h2>Leaflet</h2><p>Mapa interactivo para visualizar terrenos y elegir coordenadas.</p><h2>Chart.js</h2><p>Gráfico de precipitación prevista y el umbral configurado para el terreno.</p><h2>Supabase</h2><p>Autenticación y almacenamiento PostgreSQL. Las políticas RLS limitan los registros a su propietario.</p><p><a href="https://open-meteo.com/">Open-Meteo</a> · <a href="https://nominatim.org/">Nominatim</a> · <a href="https://leafletjs.com/">Leaflet</a> · <a href="https://www.chartjs.org/">Chart.js</a></p></main></body></html>
+<!doctype html>
+<html lang="es">
+<head>
+  <link rel="icon" href="assets/agroclima-mark.svg" type="image/svg+xml">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f7ee">
+  <meta name="description" content="Revisa y configura los servicios conectados a AgroClima.">
+  <title>Integraciones | AgroClima</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/agroclima.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+</head>
+<body class="integrations-page">
+  <header class="wrap auth-head">
+    <a class="brand" href="index.html"><img class="brand-mark-image" src="assets/agroclima-mark.svg" alt=""><span>Agro<span>Clima</span></span></a>
+    <a id="integrationsBack" href="dashboard.html">← Volver al panel</a>
+  </header>
+  <main class="wrap">
+    <section class="integrations-hero">
+      <span class="eyebrow">SERVICIOS CONECTADOS</span>
+      <h1>Integraciones</h1>
+      <p>Aquí puedes revisar cómo está conectado cada servicio y configurar la clave personal del asistente. Las integraciones meteorológicas y cartográficas que pide la rúbrica funcionan sin que pegues claves.</p>
+    </section>
+
+    <section aria-labelledby="coreIntegrationsTitle">
+      <div class="guide-intro"><h2 id="coreIntegrationsTitle">Listas para usar</h2><p>Estas APIs y bibliotecas ya forman parte de AgroClima. No solicitan una API key para este proyecto.</p></div>
+      <div class="integration-status-grid">
+        <article class="integration-card"><div class="integration-icon">☁</div><div><h2>Open-Meteo</h2><p>Pronóstico de temperatura, lluvia, humedad y viento. Se consulta con las coordenadas guardadas en cada terreno.</p><a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Documentación oficial ↗</a><div class="integration-service-action"><button class="integration-action secondary" id="testOpenMeteo" type="button">Probar conexión</button><span class="integration-help" id="openMeteoStatus">La prueba usa la ubicación de uno de tus terrenos.</span></div></div><span class="integration-badge" id="statusOpenMeteo">Integrada · sin clave</span></article>
+        <article class="integration-card"><div class="integration-icon">⌖</div><div><h2>Nominatim</h2><p>Convierte coordenadas en una localidad aproximada al seleccionar un punto en el mapa.</p><a href="https://nominatim.org/" target="_blank" rel="noopener noreferrer">Documentación oficial ↗</a><div class="integration-service-action"><button class="integration-action secondary" id="testNominatim" type="button">Probar geocodificación</button><span class="integration-help" id="nominatimStatus">Prueba manual y puntual con tu ubicación guardada.</span></div></div><span class="integration-badge" id="statusNominatim">Integrada · sin clave</span></article>
+        <article class="integration-card"><div class="integration-icon">▦</div><div><h2>Leaflet</h2><p>Mapa interactivo para ubicar, consultar y editar la posición de los terrenos registrados.</p><a href="https://leafletjs.com/" target="_blank" rel="noopener noreferrer">Documentación oficial ↗</a><div class="integration-help" id="leafletStatus">Comprobando que la biblioteca esté cargada…</div></div><span class="integration-badge" id="statusLeaflet">Comprobando…</span></article>
+        <article class="integration-card"><div class="integration-icon">▥</div><div><h2>Chart.js</h2><p>Gráficos de precipitación y temperaturas máxima y mínima para el pronóstico de siete días.</p><a href="https://www.chartjs.org/" target="_blank" rel="noopener noreferrer">Documentación oficial ↗</a><div class="integration-help" id="chartJsStatus">Comprobando que la biblioteca esté cargada…</div></div><span class="integration-badge" id="statusChartJs">Comprobando…</span></article>
+      </div>
+    </section>
+
+    <section class="integration-setup" aria-labelledby="geminiTitle">
+      <span class="eyebrow">ASISTENTE DE SOPORTE</span>
+      <h2 id="geminiTitle">Google Gemini</h2>
+      <p>Configura una clave creada en Google AI Studio para activar el chat de ayuda. La clave se envía a Supabase, se cifra en el servidor y queda asociada a tu cuenta. No se muestra ni se guarda en este navegador. Si se deja vacío, el valor guardado no cambia.</p>
+      <form id="geminiIntegrationForm">
+        <label for="geminiKey">Clave API de Gemini</label>
+        <div class="integration-key-row">
+          <div class="field"><input id="geminiKey" type="password" autocomplete="new-password" maxlength="4096" placeholder="Pega aquí tu clave de Gemini" aria-describedby="geminiHelp"></div>
+          <button class="integration-key-eye" id="toggleGeminiKey" type="button" aria-label="Mostrar clave" aria-pressed="false"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.3-6 9.5-6 9.5 6 9.5 6-3.3 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/></svg></button>
+          <div class="integration-actions"><button class="integration-action" id="saveGeminiKey" type="submit">Guardar clave</button><button class="integration-action secondary" id="verifyGeminiKey" type="button" hidden>Probar Gemini</button><button class="integration-action secondary" id="deleteGeminiKey" type="button" hidden>Quitar clave</button></div>
+        </div>
+        <p class="integration-message" id="geminiMessage" role="status" aria-live="polite"></p>
+      </form>
+      <p class="integration-help" id="geminiHelp">Obtén tu clave desde <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio ↗</a>. No la compartas por correo ni la pongas en archivos públicos. AgroClima nunca necesita tu clave de Supabase aquí.</p>
+    </section>
+
+    <section class="integration-setup">
+      <span class="eyebrow">BASE DE DATOS Y ACCESO</span>
+      <h2>Supabase</h2>
+      <p>Autenticación por correo y Google, PostgreSQL e historial protegido con políticas RLS. La URL del proyecto y la clave publicable están centralizadas por el administrador en <code>js/supabase.js</code>. La clave publicable se puede usar en el navegador con RLS; nunca pongas una clave <code>service_role</code> en GitHub Pages.</p>
+      <div class="integration-actions"><a class="integration-action secondary" href="https://supabase.com/dashboard/project/fledooqwmwrjufeihoqn/settings/general" target="_blank" rel="noopener noreferrer">Abrir proyecto Supabase ↗</a><a class="integration-action secondary" href="guia.html">Ver guía de uso</a></div>
+    </section>
+  </main>
+  <footer class="wrap footer"><a class="brand" href="index.html"><img class="brand-mark-image" src="assets/agroclima-mark.svg" alt=""><span>Agro<span>Clima</span></span></a><span><a href="guia.html">Guía de uso</a> · <a href="legal.html">Privacidad</a></span><span>AgroClima · Monitoreo agroclimático</span></footer>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script><script src="js/supabase.js"></script><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script><script src="js/agro-integrations.js" defer></script>
+</body>
+</html>
+

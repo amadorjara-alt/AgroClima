@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <link rel="icon" href="assets/agroclima-mark.svg" type="image/svg+xml">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f7ee"><meta name="description" content="Guía visual e interactiva para registrar terrenos y usar AgroClima.">
+  <title>Guía de uso | AgroClima</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/agroclima.css">
+</head>
+<body class="guide-page">
+  <header class="wrap auth-head guide-nav">
+    <a class="brand" href="index.html"><img class="brand-mark-image" src="assets/agroclima-mark.svg" alt=""><span>Agro<span>Clima</span></span></a>
+    <nav class="integration-actions" aria-label="Enlaces principales"><a class="text-link" href="integrations.html">Integraciones</a><a class="button button-green" href="dashboard.html">Abrir panel →</a></nav>
+  </header>
+  <main>
+    <section class="guide-hero wrap">
+      <div class="guide-hero-copy"><span class="eyebrow">GUÍA VISUAL · PASO A PASO</span><h1>Conoce tu panel.<br><em>Planifica con calma.</em></h1><p>Registra la ubicación de cada terreno, revisa el pronóstico y define las alertas que ayudan a organizar tu trabajo en el campo.</p><a class="button button-green button-large" href="dashboard.html">Empezar en AgroClima <span aria-hidden="true">→</span></a></div>
+      <img class="guide-hero-photo" src="https://images.pexels.com/photos/40452976/pexels-photo-40452976.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1400" alt="Agricultor observando plantas de café en una plantación" fetchpriority="high">
+      <aside class="guide-hero-card"><strong>Una rutina sencilla</strong><p>Primero ubica el terreno. Después consulta sus condiciones. Por último, revisa los avisos y el historial antes de planificar labores.</p></aside>
+    </section>
+
+    <section class="guide-section wrap" aria-labelledby="guideStepsTitle">
+      <div class="guide-intro"><span class="eyebrow">RECORRIDO POR LA APLICACIÓN</span><h2 id="guideStepsTitle">Tres pasos para empezar</h2><p>Selecciona cada paso para ver una vista ilustrativa del módulo y las acciones principales.</p></div>
+      <div class="guide-layout">
+        <div class="guide-steps" role="list" aria-label="Pasos de uso">
+          <button class="guide-step" type="button" data-guide-step="1" aria-current="step"><span class="step-number">01</span><span><h3>Registra un terreno</h3><p>Completa nombre, cultivo, superficie y ubicación. Elige un punto en el mapa o escribe sus coordenadas.</p></span><span class="step-arrow" aria-hidden="true">›</span></button>
+          <button class="guide-step" type="button" data-guide-step="2" aria-current="false"><span class="step-number">02</span><span><h3>Consulta el pronóstico</h3><p>Selecciona el terreno y pulsa “Consultar pronóstico” para ver siete días de lluvia, temperatura, humedad y viento.</p></span><span class="step-arrow" aria-hidden="true">›</span></button>
+          <button class="guide-step" type="button" data-guide-step="3" aria-current="false"><span class="step-number">03</span><span><h3>Configura y revisa</h3><p>Define umbrales por terreno, revisa los gráficos, alertas y consultas guardadas en el historial.</p></span><span class="step-arrow" aria-hidden="true">›</span></button>
+          <div class="guide-checklist" aria-label="Lista personal de avance">
+            <label class="guide-check"><input type="checkbox" data-guide-check="1"><span>Registré mi primer terreno</span></label>
+            <label class="guide-check"><input type="checkbox" data-guide-check="2"><span>Consulté un pronóstico</span></label>
+            <label class="guide-check"><input type="checkbox" data-guide-check="3"><span>Revisé mis umbrales</span></label>
+            <label class="guide-check"><input type="checkbox" data-guide-check="4"><span>Consulté el historial</span></label>
+          </div>
+          <div class="guide-progress" id="guideProgress" role="status" aria-live="polite">Tu avance: 0 de 4 pasos</div><div class="guide-progress-bar" aria-hidden="true"><span id="guideProgressBar"></span></div>
+        </div>
+
+        <div class="guide-visual" aria-label="Vista ilustrativa del paso seleccionado">
+          <div class="guide-visual-head"><div class="guide-dots" aria-hidden="true"><i></i><i></i><i></i></div><span id="guideVisualTitle">Vista ilustrativa · Registrar terreno</span></div>
+          <div class="guide-capture active" data-guide-capture="1" role="tabpanel" aria-label="Vista ilustrativa: registrar terreno">
+            <div class="mock-window"><div class="mock-topbar"><span>AgroClima · Terrenos</span><span>Registrar terreno</span></div><div class="mock-body"><div class="mock-form"><span class="mock-label">Nombre del terreno</span><span class="mock-input">Nombre de tu terreno</span><span class="mock-label">Cultivo</span><span class="mock-input">Cultivo principal</span><span class="mock-label">Superficie (hectáreas)</span><span class="mock-input">0.0</span><span class="mock-action">Guardar terreno</span></div><div class="mock-map"><span class="mock-pin">⌖</span></div></div></div>
+          </div>
+          <div class="guide-capture" data-guide-capture="2" role="tabpanel" aria-label="Vista ilustrativa: consultar el pronóstico" hidden>
+            <div class="mock-window"><div class="mock-topbar"><span>AgroClima · Clima y alertas</span><span>Pronóstico de 7 días</span></div><div class="mock-weather"><div class="mock-metric"><span>Temperatura</span><strong>—°</strong></div><div class="mock-metric"><span>Precipitación</span><strong>— mm</strong></div><div class="mock-metric"><span>Humedad</span><strong>—%</strong></div><div class="mock-chart"><i class="mock-bar" style="--bar:30%"></i><i class="mock-bar" style="--bar:52%"></i><i class="mock-bar" style="--bar:76%"></i><i class="mock-bar" style="--bar:41%"></i><i class="mock-bar" style="--bar:62%"></i><i class="mock-bar" style="--bar:26%"></i><i class="mock-bar" style="--bar:46%"></i></div></div></div>
+          </div>
+          <div class="guide-capture" data-guide-capture="3" role="tabpanel" aria-label="Vista ilustrativa: alertas e historial" hidden>
+            <div class="mock-window"><div class="mock-topbar"><span>AgroClima · Umbrales e historial</span><span>Según tu configuración</span></div><div class="mock-weather"><div class="mock-metric"><span>Lluvia de alerta</span><strong>— mm</strong></div><div class="mock-metric"><span>Viento de alerta</span><strong>— km/h</strong></div><div class="mock-metric"><span>Temperatura</span><strong>—°</strong></div><div class="mock-alert">⚑ Si un valor del pronóstico supera un umbral, AgroClima muestra una advertencia para ese terreno.</div><div class="mock-chart"><i class="mock-bar" style="--bar:34%"></i><i class="mock-bar" style="--bar:49%"></i><i class="mock-bar" style="--bar:68%"></i><i class="mock-bar" style="--bar:44%"></i><i class="mock-bar" style="--bar:57%"></i><i class="mock-bar" style="--bar:27%"></i></div></div></div>
+          </div>
+        </div>
+      </div>
+      <p class="inline-note" style="margin-top:12px">Estas vistas son ilustrativas; los valores reales aparecen cuando registras tus terrenos y consultas el pronóstico.</p>
+      <div class="guide-cta"><div><h2>¿Listo para probarlo?</h2><p>Entra a tu panel y empieza con un terreno propio.</p></div><a class="button button-white" href="dashboard.html">Ir al panel →</a></div>
+    </section>
+  </main>
+  <footer class="wrap footer"><a class="brand" href="index.html"><img class="brand-mark-image" src="assets/agroclima-mark.svg" alt=""><span>Agro<span>Clima</span></span></a><span>Fotos: <a href="https://www.pexels.com/photo/coffee-farmer-inspecting-plantation-40452976/" target="_blank" rel="noopener noreferrer">Thể Phạm · Pexels</a></span><span><a href="integrations.html">Integraciones</a> · <a href="legal.html">Privacidad</a></span></footer>
+  <script src="js/guia.js" defer></script>
+</body>
+</html>
+

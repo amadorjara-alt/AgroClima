@@ -19,7 +19,7 @@
 ## Demostración
 
 - Usar una cuenta de prueba.
-- Crear el terreno demo de café en Oxapampa.
+- Registrar manualmente el terreno de café para la demostración en Oxapampa.
 - Consultar Open-Meteo, explicar los umbrales y las alertas mostradas.
 - Abrir el historial guardado en Supabase.
 - La alerta de lluvia depende del pronóstico real en el momento de exponer.
@@ -30,3 +30,4 @@
 - [Modelo de datos](MODELO_DE_DATOS.md).
 - [Arquitectura y demostración](ARQUITECTURA_Y_DEMO.md).
 - [Correspondencia con la rúbrica](RUBRICA_Y_SUSTENTACION.md).
+

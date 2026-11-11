@@ -5,9 +5,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!client) { location.replace("login.html"); return; }
   const { data: { user }, error: authError } = await client.auth.getUser();
   if (authError || !user) { location.replace("login.html"); return; }
+  if (user.email && !user.email_confirmed_at) {
+    await client.auth.signOut();
+    location.replace("login.html?confirm=1");
+    return;
+  }
 
   const $ = (id) => document.getElementById(id);
-  const state = { farms: [], weather: new Map(), activeFarmId: "", locationPick: null, map: null, overviewMap: null, pins: [], overviewPins: [], rainChart: null, toastTimer: 0, lastGeoAt: 0, geoQueue: Promise.resolve() };
+  const state = { farms: [], weather: new Map(), activeFarmId: "", locationPick: null, map: null, overviewMap: null, pins: [], overviewPins: [], rainChart: null, temperatureChart: null, toastTimer: 0, lastGeoAt: 0, geoQueue: Promise.resolve() };
   const titles = { overview: "Resumen agroclimático", farms: "Terrenos agrícolas", weather: "Clima y alertas", history: "Historial meteorológico", settings: "Umbrales de alerta" };
   $("userEmail").textContent = user.email || "Cuenta AgroClima";
 
@@ -32,7 +37,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function renderFarms() {
-    const empty = '<div class="empty">Todavía no tienes terrenos. Registra uno o agrega la demo de Oxapampa.</div>';
+    const empty = '<div class="empty">Todavía no tienes terrenos. Registra uno para empezar.</div>';
     $("farmsList").innerHTML = state.farms.length ? state.farms.map(f => farmCard(f)).join("") : empty;
     $("overviewFarms").innerHTML = state.farms.length ? state.farms.slice(0, 4).map(f => farmCard(f, true)).join("") : '<div class="empty">Registra tu primer terreno para empezar.</div>';
     document.querySelectorAll("[data-select-farm]").forEach(el => el.addEventListener("click", event => { if (event.target.closest("button")) return; chooseFarm(el.dataset.selectFarm); }));
@@ -166,6 +171,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("forecastGrid").innerHTML = days.map(d => `<article class="forecast-day${alertsFor(farm,[d]).length ? " alert" : ""}"><span>${escapeHTML(formatDate(d.forecast_date))}</span><b>${escapeHTML(weatherLabel(Number(d.weather_code)).split(" ")[0])}</b><strong>${Number(d.temperature_max_c).toFixed(0)}° / ${Number(d.temperature_min_c).toFixed(0)}°</strong><small style="margin-top:7px">☂ ${Number(d.precipitation_mm).toFixed(1)} mm</small><small>💨 ${Number(d.wind_max_kmh).toFixed(0)} km/h</small></article>`).join("");
     $("weatherLocation").textContent = `${farm.locality || `${farm.latitude}, ${farm.longitude}`} · actualizado ${new Intl.DateTimeFormat("es-PE", { hour: "2-digit", minute: "2-digit" }).format(new Date())}`;
     renderRainChart(farm, days);
+    renderTemperatureChart(days);
     const alerts = alertsFor(farm, days); $("weatherAlerts").innerHTML = alerts.length ? alerts.slice(0, 8).map(a => `<div class="alert-item">⚠ ${escapeHTML(a.message)}</div>`).join("") : '<div class="alert-item ok">✓ El pronóstico de 7 días está dentro de los umbrales configurados.</div>';
     $("metricTemp").textContent = `${Number(first.temperature_max_c).toFixed(0)}°`;
     $("metricTempFarm").textContent = `${farm.name} · máx. de hoy`;
@@ -198,6 +204,35 @@ document.addEventListener("DOMContentLoaded", async () => {
         scales: {
           x: { grid: { display: false }, ticks: { color: "#748075", font: { family: "DM Sans", size: 10 } } },
           y: { beginAtZero: true, title: { display: true, text: "mm", color: "#748075", font: { family: "DM Sans", size: 10 } }, grid: { color: "#edf0eb" }, ticks: { color: "#748075", font: { family: "DM Sans", size: 10 } } }
+        }
+      }
+    });
+  }
+
+  function renderTemperatureChart(days) {
+    const canvas = $("temperatureChart");
+    if (!canvas || !window.Chart) return;
+    state.temperatureChart?.destroy();
+    state.temperatureChart = new Chart(canvas, {
+      type: "line",
+      data: {
+        labels: days.map(row => formatDate(row.forecast_date, { weekday: "short", day: "numeric" })),
+        datasets: [
+          { label: "Máxima (°C)", data: days.map(row => Number(row.temperature_max_c)), borderColor: "#c96732", backgroundColor: "#c9673220", pointBackgroundColor: "#c96732", pointRadius: 3, tension: 0.35, fill: false },
+          { label: "Mínima (°C)", data: days.map(row => Number(row.temperature_min_c)), borderColor: "#5788a5", backgroundColor: "#5788a520", pointBackgroundColor: "#5788a5", pointRadius: 3, tension: 0.35, fill: false }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 8, padding: 18, font: { family: "DM Sans", size: 11 } } },
+          tooltip: { callbacks: { label: context => `${context.dataset.label}: ${Number(context.parsed.y).toFixed(1)} °C` } }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: "#748075", font: { family: "DM Sans", size: 10 } } },
+          y: { title: { display: true, text: "°C", color: "#748075", font: { family: "DM Sans", size: 10 } }, grid: { color: "#edf0eb" }, ticks: { color: "#748075", font: { family: "DM Sans", size: 10 } } }
         }
       }
     });
@@ -270,15 +305,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       : `<div class="alert-item ok">✓ ${state.farms.length ? "Sin alertas activas en las últimas consultas." : "Registra un terreno para empezar."}</div>`;
   }
 
-  $("addDemoFarm").addEventListener("click", async () => {
-    const found = state.farms.find(f => f.name.toLowerCase() === "finca de café oxapampa".toLowerCase());
-    if (found) { toast("Ya tienes el terreno demo de Oxapampa."); chooseFarm(found.id); return; }
-    const { error } = await client.from("farms").insert({ name:"Finca de café Oxapampa", crop:"Café", area_hectares:10, latitude:-10.5775, longitude:-75.4017, locality:"Oxapampa, Pasco, Perú", precipitation_threshold_mm:20, wind_threshold_kmh:50, min_temperature_c:5, max_temperature_c:35 });
-    if (error) return toast("No se pudo crear el terreno demo. Aplica primero la migración de Supabase.", true);
-    await loadFarms(); const demo = state.farms.find(f => f.name === "Finca de café Oxapampa"); if (demo) chooseFarm(demo.id); toast("Terreno demo de café en Oxapampa registrado.");
-  });
   $("signOutButton").addEventListener("click", async () => { const { error } = await client.auth.signOut(); if (error) toast("No se pudo cerrar sesión.", true); else location.replace("login.html"); });
 
   try { await loadFarms(); await loadHistory(); if (state.farms.length) { const latestFarm = state.farms[0]; $("weatherFarmSelect").value = latestFarm.id; $("thresholdFarmSelect").value = latestFarm.id; await loadThresholds(); } }
   catch (error) { toast(error.message || "No se pudieron cargar tus terrenos.", true); }
 });
+

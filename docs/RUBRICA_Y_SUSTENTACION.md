@@ -22,7 +22,7 @@ Una empresa agrícola administra parcelas en distintas regiones del Perú. Consu
 ## Demostración obligatoria
 
 1. Crear una cuenta y entrar.
-2. En **Terrenos**, pulsar **Añadir demo Oxapampa**. El sistema crea el terreno de café de 10 hectáreas.
+2. En **Terrenos**, registrar manualmente el terreno de café que se presentará en la demostración. La aplicación no trae un terreno de ejemplo precargado.
 3. Abrir **Clima**, elegir la finca y pulsar **Consultar pronóstico**.
 4. Leer temperatura, precipitación, humedad y viento; mostrar las alertas que se activen contra los umbrales del terreno.
 5. Abrir **Historial** y comprobar las fechas que se guardaron.
@@ -37,3 +37,4 @@ La precipitación es un pronóstico real y variable. La demo no simula condicion
 - Integraciones: Open-Meteo, Nominatim, Leaflet y Chart.js.
 
 Cada integrante debe conocer el flujo completo: autenticación → terreno → pronóstico → reglas → historial.
+

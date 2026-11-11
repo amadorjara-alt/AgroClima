@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="es">
-<head>
+<head><link rel="icon" href="assets/agroclima-mark.svg" type="image/svg+xml">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f3f7ee">
@@ -13,7 +13,7 @@
 </head>
 <body class="agro-auth">
   <header class="wrap auth-head">
-    <a class="brand" href="index.html"><span class="brand-mark">A</span><span>Agro<span>Clima</span></span></a>
+    <a class="brand" href="index.html"><img class="brand-mark-image" src="assets/agroclima-mark.svg" alt=""><span>Agro<span>Clima</span></span></a>
     <a href="index.html">← Inicio</a>
   </header>
   <main class="wrap auth-layout">
@@ -36,10 +36,11 @@
         <label for="email">Correo electrónico</label>
         <input id="email" type="email" autocomplete="email" required>
         <label for="password">Contraseña</label>
-        <input id="password" type="password" autocomplete="current-password" required>
+        <div class="password-field"><input id="password" type="password" autocomplete="current-password" required><button class="password-toggle" type="button" data-toggle-password="password" aria-label="Mostrar contraseña" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.3-6 9.5-6 9.5 6 9.5 6-3.3 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/><path class="eye-lash" d="m4.6 6.1-1.4-1.4M8 4.4l-.5-2M16 4.4l.5-2M19.4 6.1l1.4-1.4"/><path class="eye-slash" d="M4 20 20 4"/></svg></button></div>
         <button id="loginButton" class="button button-green" type="submit">Iniciar sesión</button>
         <p id="loginMessage" class="auth-message" role="status" aria-live="polite"></p>
       </form>
+      <p id="confirmationNotice" class="auth-message" role="status" aria-live="polite"></p>
       <p class="auth-switch"><a href="reset-password.html">Olvidé mi contraseña</a></p>
       <p class="auth-switch">¿Primera vez? <a href="register.html">Crear cuenta</a></p>
     </section>
@@ -49,3 +50,4 @@
   <script src="js/agro-auth.js" defer></script>
 </body>
 </html>
+

@@ -8,6 +8,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     node.textContent = value;
     node.classList.toggle("error", error);
   };
+  document.querySelectorAll("[data-toggle-password]").forEach(toggle => {
+    toggle.addEventListener("click", () => {
+      const input = $(toggle.dataset.togglePassword);
+      if (!input) return;
+      const visible = input.type === "text";
+      input.type = visible ? "password" : "text";
+      toggle.setAttribute("aria-pressed", String(!visible));
+      toggle.setAttribute("aria-label", visible ? "Mostrar contraseña" : "Ocultar contraseña");
+      toggle.classList.toggle("is-visible", !visible);
+    });
+  });
   try {
     const { data: { session } } = await client.auth.getSession();
     if (session && /(?:login|register)\.html$/.test(location.pathname)) {
@@ -15,6 +26,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
   } catch { /* Las operaciones siguientes informan el error de autenticación. */ }
+  if (new URLSearchParams(location.search).get("confirm") === "1") {
+    message($("confirmationNotice"), "Confirma tu correo antes de acceder al panel.", true);
+  }
 
   const login = $("loginForm");
   document.querySelectorAll("[data-google-auth]").forEach(button => button.addEventListener("click", async () => {
@@ -44,7 +58,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     const button = $("loginButton"); button.disabled = true;
     try {
       const { data, error } = await client.auth.signInWithPassword({ email: $("email").value.trim(), password: $("password").value });
-      if (error) throw error;
+      if (error) {
+        if (/email not confirmed|email_not_confirmed|confirm your email/i.test(error.message || "")) throw new Error("Confirma tu correo desde el enlace que enviamos antes de iniciar sesión.");
+        throw error;
+      }
+      if (!data?.user?.email_confirmed_at) {
+        await client.auth.signOut();
+        throw new Error("Confirma tu correo desde el enlace que enviamos antes de iniciar sesión.");
+      }
       if (!data?.session) throw new Error("No se pudo establecer la sesión.");
       location.replace("dashboard.html");
     } catch (error) {
@@ -65,9 +86,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         options: { emailRedirectTo: new URL("login.html", location.href).href }
       });
       if (error) throw error;
-      if (data.session) location.replace("dashboard.html");
+      if (data.session && data.user?.email_confirmed_at) location.replace("dashboard.html");
       else {
-        message($("registerMessage"), "Cuenta creada. Revisa tu correo para confirmar el registro.");
+        if (data.session) await client.auth.signOut();
+        message($("registerMessage"), "Cuenta creada. Revisa tu correo y confirma la dirección antes de iniciar sesión.");
         register.reset(); button.disabled = false;
       }
     } catch (error) {
@@ -105,3 +127,4 @@ document.addEventListener("DOMContentLoaded", async () => {
     } finally { button.disabled = false; }
   });
 });
+
