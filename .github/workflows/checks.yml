@@ -1,4 +1,4 @@
-name: Verificar CompraSmart AI
+name: Verificar AgroClima
 on:
   push:
   pull_request:

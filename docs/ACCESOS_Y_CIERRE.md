@@ -1,84 +1,32 @@
-# Configuración pendiente para cerrar CompraSmart AI
+# Configuración y cierre de entrega · AgroClima
 
-## Accesos ya resueltos
+## Supabase
 
-GitHub permite escribir en amadorjara-alt/CompraSmart-AI. Supabase permite administrar CompraSmart-AI (fledooqwmwrjufeihoqn) en amadorjara-alt's Org. La cuenta del integrante debía tener Administrator para autorizar la conexión; Developer no bastaba para ese paso.
+- Proyecto enlazado: `fledooqwmwrjufeihoqn`.
+- Confirmar que existan `farms` y `weather_history`.
+- Revisar RLS y las políticas de propietario. La migración reproducible es `supabase/migrations/20261110090000_agroclima.sql`.
+- URL del sitio: `https://amadorjara-alt.github.io/AgroClima/`.
+- URL de redirección permitida: `https://amadorjara-alt.github.io/AgroClima/**`.
+- El registro puede requerir confirmación del correo.
+- No publicar `service_role` ni otras claves privadas en el frontend.
 
-La web ya existe en https://amadorjara-alt.github.io/CompraSmart-AI/. No se necesita contratar hosting ni crear otro Supabase.
+## GitHub Pages
 
-## Lo que debe introducir el grupo
+- Publicar `main` desde la carpeta raíz del repositorio.
+- Comprobar el sitio por HTTPS y abrir inicio, registro, acceso y dashboard.
+- Confirmar que mapas y gráficos cargan y que la navegación queda usable en móvil.
 
-**La clave gratuita se configura directamente en el servidor. El proyecto ya registra lecturas de OCR.space; estos pasos sirven para configurar o sustituir la clave cuando corresponda.**
+## Demostración
 
-1. Abrir https://ocr.space/ocrapi y solicitar la clave Free con un correo del grupo.
-2. Guardarla desde la web → Integraciones → OCR.space → Configurar. El servidor la cifra con el secreto existente.
-3. Como alternativa, el administrador puede abrir https://supabase.com/dashboard/project/fledooqwmwrjufeihoqn/functions/secrets y crear OCR_SPACE_API_KEY con la clave de OCR.space. Introducir su valor directamente en Supabase.
-4. No compartir la clave en el chat ni publicarla en GitHub. No usar la clave pública de demostración para el grupo.
-5. No regenerar CREDENTIALS_ENCRYPTION_KEY: los registros existentes necesitan el secreto original.
+- Usar una cuenta de prueba.
+- Crear el terreno demo de café en Oxapampa.
+- Consultar Open-Meteo, explicar los umbrales y las alertas mostradas.
+- Abrir el historial guardado en Supabase.
+- La alerta de lluvia depende del pronóstico real en el momento de exponer.
 
-## Demostración final
+## Entregables
 
-Entrar con una cuenta del proyecto, subir el comprobante ficticio tests/fixtures/receipt-demo.png, revisar los dos productos y confirmar. Comprobar que el historial guarda 118 PEN y que el catálogo, proveedor y referencias reaparecen después de recargar.
-
-Si se usan líneas sin impuestos, introducir 18 como impuesto adicional en ese fixture. Si los precios de una factura real ya incluyen IGV, introducir 0 adicional. No sumar el impuesto dos veces.
-
-Un documento guardado sin clave puede procesarse después con su botón Procesar OCR; no es necesario volver a subirlo. Un borrador existente se recupera sin otra llamada al proveedor.
-
-Para comparar, registrar otro comprobante ficticio de otro proveedor con el mismo nombre completo, marca y unidad. No mezclar presentaciones ni monedas. La alerta señala una diferencia de al menos 15% frente a la menor compra reciente del negocio.
-
-## Registro, recuperación y extra de Google
-
-El registro está habilitado y exige confirmar el correo. El dueño de la cuenta debe abrir su buzón y completar esa confirmación; no se requieren contraseñas compartidas.
-
-Revisar en Supabase Auth las URL permitidas:
-
-- https://amadorjara-alt.github.io/CompraSmart-AI/login.html
-- https://amadorjara-alt.github.io/CompraSmart-AI/reset-password.html
-
-Google Login aún está deshabilitado. Para incluir ese extra de la rúbrica, crear un cliente OAuth Web del grupo. El origen autorizado es https://amadorjara-alt.github.io y el callback de Google a Supabase es:
-
-https://fledooqwmwrjufeihoqn.supabase.co/auth/v1/callback
-
-El Client ID y Client Secret se introducen directamente en Supabase Auth → Google. No son claves de Gemini. Solicitar solo identidad básica; no Sheets ni Drive. Comprobar el login con una cuenta permitida y el regreso al login.html de la web.
-
-La documentación de la configuración está en https://supabase.com/docs/guides/auth/social-sign-in/auth-google.
-
-## Verificaciones ya ejecutadas
-
-Ambas funciones nuevas están activas, RLS y confirmación pasaron pruebas reales con dos identidades, la API OCR leyó el fixture y 58 pruebas automáticas pasaron. Esto no sustituye la prueba interactiva final con la clave y las cuentas del grupo.
-
-## Comprobación posterior
-
-El proyecto ya registra lecturas de OCR.space y una compra confirmada. Las instrucciones de clave anteriores sirven para configurar o sustituirla, no implican que siga faltando. El resumen diferencia una clave guardada de una lectura realmente registrada.
-
-## Reiniciar el historial (4 de noviembre de 2026)
-
-En **Historial de compras → Reiniciar historial**, el usuario ve el negocio y la cantidad de comprobantes que va a eliminar. Debe escribir `ELIMINAR` y pulsar **Eliminar y reiniciar**. Cancelar o abrir el diálogo no modifica datos.
-
-El reinicio elimina facturas terminadas y borradores, líneas de compra y referencias de precios del negocio actual. Conserva la cuenta, el negocio, el catálogo de productos, los proveedores, las claves y el consumo diario de OCR. Los registros de otros negocios y usuarios se conservan. El servidor comprueba la sesión, la propiedad del negocio y el conjunto exacto de facturas mostrado; rechaza confirmaciones antiguas y OCR activos.
-
-Los archivos se eliminan mediante Storage API después de la transacción de compras. Si falla la conexión, una cola privada conserva las rutas y muestra **Completar limpieza de archivos**, que permite reintentar incluso después de recargar. Nunca se modifica `storage.objects` por SQL.
-
-Pruebas: `tests/history-reset.test.mjs`, integración en `tests/ui.test.mjs` y `supabase/tests/reset-history-rls.sql`. La prueba SQL crea negocios ficticios, comprueba aislamiento entre dos usuarios y dos negocios del mismo propietario, y revierte todas sus filas. Instalar esta función no ejecuta un reinicio sobre los datos del grupo.
-
-Verificación de esta entrega: 67 pruebas automáticas aprobadas, nueve archivos JavaScript verificados, prueba SQL con reversión aprobada y comprobación visual con datos ficticios. La función y la cola rechazan peticiones anónimas con HTTP 401. Los 10 comprobantes y archivos originales, cinco credenciales y dos solicitudes OCR permanecieron intactos tras aplicar la migración y probarla.
-
-
-## Corrección móvil y búsqueda web
-
-Se restauran la barra lateral y sus etiquetas, ocultas por reglas CSS antiguas. La navegación incluye fondo para cerrar, botón de cierre, Escape, gestión del foco y desbloqueo al cambiar de tamaño.
-
-La búsqueda usa un solo campo para filtrar compras y consultar fuentes de Internet dentro del panel. La nueva función `search-products` mantiene `verify_jwt = true`, verifica además la identidad con Auth y llama al endpoint fijo de Tavily. No lee documentos privados ni requiere service_role. Valida la consulta, limita el tamaño del cuerpo, recorta los extractos, filtra enlaces inseguros y devuelve errores de cuota o conexión sin exponer respuestas privadas del proveedor. El acceso gratuito sin clave se probó con una consulta real de arroz; la pantalla se probó por separado con datos ficticios identificados como tales.
-
-Validación: 78 pruebas automatizadas, verificación de 10 archivos JS y revisión visual en marcos de 390 × 844, 844 × 390 y 1280 × 850. Las pruebas visuales no se conectan a Supabase ni modifican compras reales. La publicación del frontend debe confirmarse en GitHub Pages antes de anunciar la actualización como visible.
-
-
-## Corrección de confirmación SUNAT
-
-Se reconocen las columnas tabuladas de SUNAT, el valor unitario con más de dos decimales y la columna ICBPER. Los importes derivados de cantidad × valor unitario se señalan para revisión. Se recuperan borradores sin líneas desde su texto guardado y se conservan los que ya contienen productos. No hay nuevas llamadas al OCR para recuperar un borrador.
-
-El módulo puro compartido está en `supabase/functions/shared/receipt-parser.mjs`; la carpeta pública sin guion bajo permite cargarlo como módulo desde GitHub Pages. `_shared/receipt-parser.mjs` conserva los imports existentes del servidor. El formulario incluye comprobación visible de sumas y una fila editable cuando faltan productos. Los assets modificados llevan versión para actualizar la caché del navegador. La fecha de emisión conserva su día al mostrarse en Lima.
-
-La migración remota `20261104211500_preserve_precise_purchase_values.sql` amplía `invoice_items.unit_price` a numeric(20,10), `invoice_items.quantity` a numeric(18,6) y `price_history.unit_price` a numeric(24,4), manteniendo RLS. `supabase/tests/sunat-confirmation.sql` comprueba con datos ficticios la confirmación, precisión, idempotencia y rechazo de importes incoherentes, y termina con ROLLBACK. La confirmación real del usuario se deja al comerciante.
-
-Validación: 88 pruebas automatizadas, 11 archivos JS/MJS comprobados y recorrido visual desde un borrador antiguo sin productos hasta Compra guardada, con factura ficticia identificada y sin conexión a Supabase. Los fixtures del repositorio contienen datos inventados.
+- URL funcional y repositorio actualizado.
+- [Modelo de datos](MODELO_DE_DATOS.md).
+- [Arquitectura y demostración](ARQUITECTURA_Y_DEMO.md).
+- [Correspondencia con la rúbrica](RUBRICA_Y_SUSTENTACION.md).

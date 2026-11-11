@@ -1,5 +1,5 @@
 /* ============================================================
-   COMPRASMART AI
+   AGROCLIMA
    Archivo: js/supabase.js
    Configuración centralizada de Supabase
    ============================================================ */
@@ -14,7 +14,7 @@
 
     if (window.supabaseClient) {
         console.info(
-            "CompraSmart AI: Supabase ya está inicializado."
+            "AgroClima: Supabase ya está inicializado."
         );
         return;
     }
@@ -147,7 +147,7 @@
 
                 global: {
                     headers: {
-                        "X-Client-Info": "comprasmart-ai-web"
+                        "X-Client-Info": "agroclima-web"
                     }
                 }
             }
@@ -177,7 +177,7 @@
         window.supabaseClient = supabaseClient;
 
         console.info(
-            "CompraSmart AI: cliente Supabase inicializado."
+            "AgroClima: cliente Supabase inicializado."
         );
 
     } catch (error) {
@@ -189,7 +189,7 @@
         window.supabaseClient = null;
 
         console.error(
-            "CompraSmart AI: error de inicialización:",
+            "AgroClima: error de inicialización:",
             error.message
         );
 
@@ -291,7 +291,7 @@
             (event, session) => {
 
                 console.info(
-                    "CompraSmart AI: estado de autenticación:",
+                    "AgroClima: estado de autenticación:",
                     event
                 );
 
@@ -310,5 +310,3 @@
     }
 
 })();
-
-
