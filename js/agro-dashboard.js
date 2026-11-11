@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   const $ = (id) => document.getElementById(id);
-  const state = { farms: [], weather: new Map(), activeFarmId: "", locationPick: null, map: null, overviewMap: null, pins: [], overviewPins: [], rainChart: null, temperatureChart: null, toastTimer: 0, lastGeoAt: 0, geoQueue: Promise.resolve() };
+  const state = { farms: [], weather: new Map(), activeFarmId: "", locationPick: null, map: null, overviewMap: null, pins: [], overviewPins: [], searchMarker: null, rainChart: null, temperatureChart: null, toastTimer: 0, lastGeoAt: 0, geoQueue: Promise.resolve() };
   const titles = { overview: "Resumen agroclimático", farms: "Terrenos agrícolas", weather: "Clima y alertas", history: "Historial meteorológico", settings: "Umbrales de alerta" };
   $("userEmail").textContent = user.email || "Cuenta AgroClima";
 
@@ -67,6 +67,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       state.map.on("click", async e => {
         const picked = { latitude: Number(e.latlng.lat.toFixed(6)), longitude: Number(e.latlng.lng.toFixed(6)), locality: "" };
         state.locationPick = picked;
+        markSearchLocation(picked.latitude, picked.longitude);
         if ($("farmDialog").open) { $("farmLatitude").value = picked.latitude; $("farmLongitude").value = picked.longitude; }
         const place = await reverseGeocode(picked.latitude, picked.longitude);
         if (place) { picked.locality = place; if ($("farmDialog").open) $("farmLocality").value = place; }
@@ -97,6 +98,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   function chooseFarm(id) { state.activeFarmId = id; $("weatherFarmSelect").value = id; $("thresholdFarmSelect").value = id; renderFarms(); loadThresholds(); setView("weather"); }
   function openFarm(id = "") {
     const form = $("farmForm"); form.reset(); $("farmId")?.remove();
+    $("farmLocationResults").replaceChildren(); $("farmLocationStatus").textContent = ""; $("farmLocationSearch").value = "";
     const farm = state.farms.find(f => f.id === id);
     if (farm) {
       const hidden = document.createElement("input"); hidden.type = "hidden"; hidden.id = "farmId"; hidden.value = farm.id; form.prepend(hidden);
@@ -107,23 +109,81 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.querySelector("#farmDialog h3").textContent = "Registrar terreno";
       if (state.locationPick) { $("farmLatitude").value = state.locationPick.latitude; $("farmLongitude").value = state.locationPick.longitude; $("farmLocality").value = state.locationPick.locality; }
     }
+    setView("farms");
     $("farmDialog").showModal(); setTimeout(() => state.map?.invalidateSize(), 80);
   }
   document.querySelectorAll("[data-open-farm]").forEach(el => el.addEventListener("click", () => openFarm()));
   $("closeFarmDialog").addEventListener("click", () => $("farmDialog").close()); $("cancelFarm").addEventListener("click", () => $("farmDialog").close());
 
+  function queueGeocoding(task) {
+    const request = state.geoQueue.catch(() => null).then(async () => {
+      const wait = Math.max(0, 1100 - (Date.now() - state.lastGeoAt));
+      if (wait) await new Promise(resolve => setTimeout(resolve, wait));
+      try { return await task(); }
+      finally { state.lastGeoAt = Date.now(); }
+    });
+    state.geoQueue = request.catch(() => null);
+    return request;
+  }
+
+  function markSearchLocation(lat, lon) {
+    if (!state.map || !window.L) return;
+    if (state.searchMarker) state.searchMarker.setLatLng([lat, lon]);
+    else state.searchMarker = L.marker([lat, lon]).addTo(state.map);
+  }
+
   async function reverseGeocode(lat, lon) {
-    const request = state.geoQueue.then(async () => {
-      const wait = Math.max(0, 1100 - (Date.now() - state.lastGeoAt)); if (wait) await new Promise(r => setTimeout(r, wait)); state.lastGeoAt = Date.now();
+    return queueGeocoding(async () => {
       try {
         const url = new URL("https://nominatim.openstreetmap.org/reverse"); url.search = new URLSearchParams({ format: "jsonv2", lat: String(lat), lon: String(lon), zoom: "10", addressdetails: "1" });
         const response = await fetch(url, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(10000) }); if (!response.ok) return "";
         const data = await response.json(), a = data.address || {}; return [a.city || a.town || a.village || a.municipality || a.county, a.state, a.country].filter(Boolean).join(", ") || data.display_name || "";
       } catch { return ""; }
     });
-    state.geoQueue = request.catch(() => "");
-    return request;
   }
+
+  async function searchFarmLocation() {
+    const query = $("farmLocationSearch").value.trim();
+    const button = $("searchFarmLocation");
+    const resultsNode = $("farmLocationResults");
+    resultsNode.replaceChildren();
+    if (query.length < 3) { $("farmLocationStatus").textContent = "Escribe al menos 3 caracteres para buscar."; $("farmLocationSearch").focus(); return; }
+    setBusy(button, true, "Buscar en el mapa");
+    $("farmLocationStatus").textContent = "Buscando localidades y direcciones en Perú…";
+    try {
+      const places = await queueGeocoding(async () => {
+        const url = new URL("https://nominatim.openstreetmap.org/search");
+        url.search = new URLSearchParams({ q: query, format: "jsonv2", addressdetails: "1", limit: "5", countrycodes: "pe", "accept-language": "es" });
+        const response = await fetch(url, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(10000) });
+        if (response.status === 429) throw new Error("Nominatim limitó temporalmente las búsquedas. Espera un momento e inténtalo otra vez.");
+        if (!response.ok) throw new Error("No se pudo consultar el buscador de localidades. Inténtalo otra vez.");
+        return response.json();
+      });
+      if (!Array.isArray(places) || !places.length) { $("farmLocationStatus").textContent = "No encontré coincidencias en Perú. Prueba con otro distrito, provincia o dirección."; return; }
+      for (const place of places) {
+        const result = document.createElement("button");
+        result.type = "button"; result.className = "location-result"; result.setAttribute("role", "option");
+        result.textContent = String(place.display_name || "Ubicación encontrada");
+        result.addEventListener("click", () => {
+          const lat = Number(place.lat), lon = Number(place.lon);
+          if (!Number.isFinite(lat) || !Number.isFinite(lon)) { $("farmLocationStatus").textContent = "La ubicación no devolvió coordenadas válidas."; return; }
+          const latitude = Number(lat.toFixed(6)), longitude = Number(lon.toFixed(6));
+          const locality = String(place.display_name || "").slice(0, 180);
+          state.locationPick = { latitude, longitude, locality };
+          $("farmLatitude").value = latitude; $("farmLongitude").value = longitude; $("farmLocality").value = locality;
+          if (state.map) { markSearchLocation(latitude, longitude); state.map.setView([latitude, longitude], 14, { animate: true }); }
+          $("farmLocationStatus").textContent = "Ubicación seleccionada: el mapa y las coordenadas se actualizaron.";
+          resultsNode.replaceChildren();
+        });
+        resultsNode.append(result);
+      }
+      $("farmLocationStatus").textContent = `Encontré ${places.length} opciones. Elige la correcta para centrar el mapa.`;
+    } catch (error) {
+      $("farmLocationStatus").textContent = error?.message || "No se pudo completar la búsqueda.";
+    } finally { setBusy(button, false, "Buscar en el mapa"); }
+  }
+  $("searchFarmLocation").addEventListener("click", searchFarmLocation);
+  $("farmLocationSearch").addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); searchFarmLocation(); } });
 
   $("farmForm").addEventListener("submit", async event => {
     event.preventDefault(); const button = $("saveFarmButton"); setBusy(button, true, "Guardar terreno");
