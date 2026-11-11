@@ -461,3 +461,9 @@ td{color:#4e5f51}
 .dashboard-body .field-grid,.dashboard-body .threshold-grid{position:static!important;transform:none!important;min-width:0;max-width:100%}
 .toast{bottom:84px}
 @media(max-width:700px){.toast{right:12px;bottom:145px}}
+
+.assistant-invite{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:0 0 18px;padding:17px 20px;border:1px solid #dce8d7;border-radius:14px;background:linear-gradient(115deg,#f2f7ec,#fff);box-shadow:0 4px 15px #294b2410}
+.assistant-invite strong{display:block;color:#294936;font:700 14px Manrope}
+.assistant-invite p{margin:5px 0 0;color:#718073;font-size:12px;line-height:1.5}
+.assistant-invite button{flex:0 0 auto}
+@media(max-width:700px){.assistant-invite{align-items:flex-start;flex-direction:column}}

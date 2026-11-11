@@ -23,6 +23,7 @@
       <p>Aquí puedes revisar cómo está conectado cada servicio y configurar la clave personal del asistente. Las integraciones meteorológicas y cartográficas que pide la rúbrica funcionan sin que pegues claves.</p>
     </section>
 
+    <section class="assistant-invite" aria-label="Ayuda para configurar integraciones"><div><strong>¿Te atascaste al conectar una API?</strong><p>El asistente te guía para configurar Gemini y usar la ayuda dentro de AgroClima.</p></div><button class="integration-action" type="button" data-assistant-open>Abrir asistente IA</button></section>
     <section aria-labelledby="coreIntegrationsTitle">
       <div class="guide-intro"><h2 id="coreIntegrationsTitle">Listas para usar</h2><p>Estas APIs y bibliotecas ya forman parte de AgroClima. No solicitan una API key para este proyecto.</p></div>
       <div class="integration-status-grid">
@@ -56,7 +57,16 @@
       <div class="integration-actions"><a class="integration-action secondary" href="https://supabase.com/dashboard/project/fledooqwmwrjufeihoqn/settings/general" target="_blank" rel="noopener noreferrer">Abrir proyecto Supabase ↗</a><a class="integration-action secondary" href="guia.html">Ver guía de uso</a></div>
     </section>
   </main>
-  <footer class="wrap footer"><a class="brand" href="index.html"><img class="brand-mark-image" src="assets/agroclima-mark.svg" alt=""><span>Agro<span>Clima</span></span></a><span><a href="guia.html">Guía de uso</a> · <a href="legal.html">Privacidad</a></span><span>AgroClima · Monitoreo agroclimático</span></footer>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script><script src="js/supabase.js?v=20261110-authfix1"></script><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script><script src="js/agro-integrations.js?v=20261110-authfix1" defer></script>
+  <div class="assistant-widget" id="assistantWidget">
+    <section class="assistant-panel" id="assistantPanel" aria-label="Soporte AgroClima con Gemini" hidden>
+      <header class="assistant-head"><div><strong>Asistente AgroClima</strong><small>Ayuda para usar y configurar la plataforma</small></div><button class="assistant-close" id="assistantClose" type="button" aria-label="Cerrar soporte">×</button></header>
+      <div class="assistant-messages" id="assistantMessages" aria-live="polite" aria-relevant="additions text"><div class="assistant-message">¡Hola! Puedo ayudarte a conectar Gemini y usar las integraciones. Para responder con IA, configura primero tu clave Gemini aquí en Integraciones.</div></div>
+      <div class="assistant-suggestions" id="assistantSuggestions"><button type="button">¿Dónde obtengo mi clave Gemini?</button><button type="button">¿Cómo protegen mi clave?</button></div>
+      <form class="assistant-form" id="assistantForm"><label class="sr-only" for="assistantInput">Escribe tu pregunta</label><input id="assistantInput" maxlength="1500" autocomplete="off" placeholder="Escribe tu pregunta…" required><button type="submit" aria-label="Enviar pregunta">Enviar</button></form>
+      <p class="assistant-privacy">No compartas contraseñas ni claves. Solo enviamos los mensajes que escribes aquí.</p>
+    </section>
+    <button class="assistant-toggle" id="assistantToggle" type="button" aria-expanded="false" aria-controls="assistantPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 0 0-7.2 13l-.7 4 4-1.3A8.5 8.5 0 1 0 12 3.5Z"/><path d="M8.5 9h7M8.5 12h5M8.5 15h3"/></svg><span>Ayuda con IA</span></button>
+  </div>  <footer class="wrap footer"><a class="brand" href="index.html"><img class="brand-mark-image" src="assets/agroclima-mark.svg" alt=""><span>Agro<span>Clima</span></span></a><span><a href="guia.html">Guía de uso</a> · <a href="legal.html">Privacidad</a></span><span>AgroClima · Monitoreo agroclimático</span></footer>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script><script src="js/supabase.js?v=20261110-authfix1"></script><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script><script src="js/agro-integrations.js?v=20261110-assistant2" defer></script><script src="js/agro-assistant.js?v=20261110-assistant2" defer></script>
 </body>
 </html>

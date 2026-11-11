@@ -60,6 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   toggle.addEventListener("click", () => setOpen(panel.hidden));
+  document.querySelectorAll("[data-assistant-open]").forEach(button => button.addEventListener("click", () => setOpen(true)));
   close?.addEventListener("click", () => setOpen(false));
   form.addEventListener("submit", event => { event.preventDefault(); ask(input.value); });
   suggestions?.querySelectorAll("button").forEach(button => button.addEventListener("click", () => ask(button.textContent)));
