@@ -23,6 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch { return false; }
   };
 
+
   document.querySelectorAll("[data-toggle-password]").forEach(toggle => {
     toggle.addEventListener("click", () => {
       const input = $(toggle.dataset.togglePassword);

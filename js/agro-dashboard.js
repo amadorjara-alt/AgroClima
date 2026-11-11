@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   const $ = (id) => document.getElementById(id);
-  const state = { farms: [], weather: new Map(), activeFarmId: "", locationPick: null, map: null, overviewMap: null, pins: [], overviewPins: [], searchMarker: null, rainChart: null, temperatureChart: null, toastTimer: 0, lastGeoAt: 0, geoQueue: Promise.resolve() };
+  const state = { farms: [], weather: new Map(), activeFarmId: "", locationPick: null, map: null, overviewMap: null, pickerMap: null, locationMarkers: new Map(), locationRequestId: 0, elevationCache: new Map(), pins: [], overviewPins: [], rainChart: null, temperatureChart: null, toastTimer: 0, lastGeoAt: 0, geoQueue: Promise.resolve() };
   const titles = { overview: "Resumen agroclimático", farms: "Terrenos agrícolas", weather: "Clima y alertas", history: "Historial meteorológico", settings: "Umbrales de alerta" };
   $("userEmail").textContent = user.email || "Cuenta AgroClima";
 
@@ -37,7 +37,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function farmCard(farm, compact = false) {
     const selected = farm.id === state.activeFarmId ? " selected" : "";
-    return `<article class="farm-card${selected}" data-select-farm="${escapeHTML(farm.id)}"><div class="farm-inline"><h4>${escapeHTML(farm.name)}</h4><span class="tag">${escapeHTML(farm.crop)}</span></div><p>${escapeHTML(farm.locality || `${farm.latitude}, ${farm.longitude}`)} · ${Number(farm.area_hectares).toLocaleString("es-PE")} ha</p>${compact ? "" : `<div class="form-actions"><button class="button-small button-outline" data-edit-farm="${escapeHTML(farm.id)}">Editar</button><button class="button-small button-outline" data-delete-farm="${escapeHTML(farm.id)}">Eliminar</button></div>`}</article>`;
+    const elevation = farm.elevation_m == null ? "Altitud pendiente" : `${Number(farm.elevation_m).toLocaleString("es-PE")} m s. n. m.`;
+    return `<article class="farm-card${selected}" data-select-farm="${escapeHTML(farm.id)}"><div class="farm-inline"><h4>${escapeHTML(farm.name)}</h4><span class="tag">${escapeHTML(farm.crop)}</span></div><p>${escapeHTML(farm.locality || `${farm.latitude}, ${farm.longitude}`)} · ${Number(farm.area_hectares).toLocaleString("es-PE")} ha · ${escapeHTML(elevation)}</p>${compact ? "" : `<div class="form-actions"><button class="button-small button-outline" data-edit-farm="${escapeHTML(farm.id)}">Editar</button><button class="button-small button-outline" data-delete-farm="${escapeHTML(farm.id)}">Eliminar</button></div>`}</article>`;
   }
 
   function renderFarms() {
@@ -64,20 +65,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!state.map) {
       state.map = L.map("farmsMap", { scrollWheelZoom: false }).setView([-9.19, -75.015], 5);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "&copy; OpenStreetMap" }).addTo(state.map);
-      state.map.on("click", async e => {
-        const picked = { latitude: Number(e.latlng.lat.toFixed(6)), longitude: Number(e.latlng.lng.toFixed(6)), locality: "" };
-        state.locationPick = picked;
-        markSearchLocation(picked.latitude, picked.longitude);
-        if ($("farmDialog").open) { $("farmLatitude").value = picked.latitude; $("farmLongitude").value = picked.longitude; }
-        const place = await reverseGeocode(picked.latitude, picked.longitude);
-        if (place) { picked.locality = place; if ($("farmDialog").open) $("farmLocality").value = place; }
-        if (!$("farmDialog").open) toast(place ? `Ubicación seleccionada: ${place}. Ahora registra el terreno.` : "Coordenadas seleccionadas. Ahora registra el terreno.");
-      });
+      state.map.on("click", e => { selectLocationPoint(e.latlng.lat, e.latlng.lng, { lookupAddress: true }); });
     }
     if (!window.overviewLeafletMap) {
       state.overviewMap = L.map("overviewMap", { scrollWheelZoom: false }).setView([-9.19, -75.015], 5);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "&copy; OpenStreetMap" }).addTo(state.overviewMap);
     }
+  }
+
+  function ensurePickerMap() {
+    if (!window.L) return;
+    const lat = Number($("farmLatitude").value), lon = Number($("farmLongitude").value);
+    const hasSelection = $("farmLatitude").value !== "" && $("farmLongitude").value !== "" && Number.isFinite(lat) && Number.isFinite(lon);
+    if (!state.pickerMap) {
+      state.pickerMap = L.map("farmPickerMap", { scrollWheelZoom: false }).setView(hasSelection ? [lat, lon] : [-9.19, -75.015], hasSelection ? 14 : 5);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "&copy; OpenStreetMap" }).addTo(state.pickerMap);
+      state.pickerMap.on("click", e => { selectLocationPoint(e.latlng.lat, e.latlng.lng, { lookupAddress: true }); });
+    } else if (hasSelection) state.pickerMap.setView([lat, lon], 14);
+    if (hasSelection) markSearchLocation(lat, lon);
   }
 
   function renderMapMarkers() {
@@ -86,9 +91,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     state.overviewPins.forEach(pin => pin.remove()); state.overviewPins = [];
     const points = state.farms.map(f => [Number(f.latitude), Number(f.longitude)]);
     state.farms.forEach(f => {
-      const marker = L.marker([f.latitude, f.longitude]).addTo(state.map).bindPopup(`<div class="farm-popup"><strong>${escapeHTML(f.name)}</strong><br><span>${escapeHTML(f.crop)} · ${escapeHTML(f.locality)}</span></div>`);
+      const elevation = f.elevation_m == null ? "Altitud pendiente" : `${Number(f.elevation_m).toLocaleString("es-PE")} m s. n. m.`;
+      const marker = L.marker([f.latitude, f.longitude]).addTo(state.map).bindPopup(`<div class="farm-popup"><strong>${escapeHTML(f.name)}</strong><br><span>${escapeHTML(f.crop)} · ${escapeHTML(f.locality)}<br>${escapeHTML(elevation)}</span></div>`);
       marker.on("click", () => chooseFarm(f.id)); state.pins.push(marker);
-      const overviewPin = L.marker([f.latitude, f.longitude]).addTo(state.overviewMap).bindPopup(`<div class="farm-popup"><strong>${escapeHTML(f.name)}</strong><br><span>${escapeHTML(f.crop)} · ${escapeHTML(f.locality)}</span></div>`);
+      const overviewPin = L.marker([f.latitude, f.longitude]).addTo(state.overviewMap).bindPopup(`<div class="farm-popup"><strong>${escapeHTML(f.name)}</strong><br><span>${escapeHTML(f.crop)} · ${escapeHTML(f.locality)}<br>${escapeHTML(elevation)}</span></div>`);
       state.overviewPins.push(overviewPin);
     });
     if (points.length) { state.map.fitBounds(points, { padding: [30, 30], maxZoom: 11 }); state.overviewMap.fitBounds(points, { padding: [24, 24], maxZoom: 10 }); }
@@ -104,13 +110,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       const hidden = document.createElement("input"); hidden.type = "hidden"; hidden.id = "farmId"; hidden.value = farm.id; form.prepend(hidden);
       $("farmName").value = farm.name; $("farmCrop").value = farm.crop; $("farmArea").value = farm.area_hectares; $("farmLocality").value = farm.locality;
       $("farmLatitude").value = farm.latitude; $("farmLongitude").value = farm.longitude;
+      $("farmElevation").value = farm.elevation_m ?? "";
       document.querySelector("#farmDialog h3").textContent = "Editar terreno";
     } else {
       document.querySelector("#farmDialog h3").textContent = "Registrar terreno";
-      if (state.locationPick) { $("farmLatitude").value = state.locationPick.latitude; $("farmLongitude").value = state.locationPick.longitude; $("farmLocality").value = state.locationPick.locality; }
+      if (state.locationPick) { $("farmLatitude").value = state.locationPick.latitude; $("farmLongitude").value = state.locationPick.longitude; $("farmLocality").value = state.locationPick.locality || ""; $("farmElevation").value = state.locationPick.elevation_m ?? ""; }
     }
     setView("farms");
-    $("farmDialog").showModal(); setTimeout(() => state.map?.invalidateSize(), 80);
+    $("farmDialog").showModal(); ensurePickerMap(); setTimeout(() => { state.map?.invalidateSize(); state.pickerMap?.invalidateSize(); }, 100);
   }
   document.querySelectorAll("[data-open-farm]").forEach(el => el.addEventListener("click", () => openFarm()));
   $("closeFarmDialog").addEventListener("click", () => $("farmDialog").close()); $("cancelFarm").addEventListener("click", () => $("farmDialog").close());
@@ -127,9 +134,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function markSearchLocation(lat, lon) {
-    if (!state.map || !window.L) return;
-    if (state.searchMarker) state.searchMarker.setLatLng([lat, lon]);
-    else state.searchMarker = L.marker([lat, lon]).addTo(state.map);
+    if (!window.L) return;
+    for (const map of [state.map, state.pickerMap]) {
+      if (!map) continue;
+      const marker = state.locationMarkers.get(map);
+      if (marker) marker.setLatLng([lat, lon]);
+      else state.locationMarkers.set(map, L.marker([lat, lon]).addTo(map));
+    }
   }
 
   async function reverseGeocode(lat, lon) {
@@ -140,6 +151,58 @@ document.addEventListener("DOMContentLoaded", async () => {
         const data = await response.json(), a = data.address || {}; return [a.city || a.town || a.village || a.municipality || a.county, a.state, a.country].filter(Boolean).join(", ") || data.display_name || "";
       } catch { return ""; }
     });
+  }
+
+  async function fetchElevation(lat, lon) {
+    const cacheKey = `${lat.toFixed(4)},${lon.toFixed(4)}`;
+    if (state.elevationCache.has(cacheKey)) return state.elevationCache.get(cacheKey);
+    try {
+      const url = new URL("https://api.open-meteo.com/v1/elevation");
+      url.search = new URLSearchParams({ latitude: String(lat), longitude: String(lon) });
+      const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
+      if (!response.ok) return null;
+      const data = await response.json(), elevation = Number(data.elevation?.[0]);
+      if (!Number.isFinite(elevation)) return null;
+      state.elevationCache.set(cacheKey, elevation);
+      return elevation;
+    } catch { return null; }
+  }
+
+  async function selectLocationPoint(lat, lon, { locality = "", lookupAddress = false } = {}) {
+    const latitude = Number(Number(lat).toFixed(6)), longitude = Number(Number(lon).toFixed(6));
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
+    const requestId = ++state.locationRequestId;
+    const picked = { latitude, longitude, locality, elevation_m: null };
+    state.locationPick = picked;
+    markSearchLocation(latitude, longitude);
+    for (const map of [state.map, state.pickerMap]) if (map) map.setView([latitude, longitude], 14, { animate: true });
+
+    const dialogOpen = $("farmDialog").open;
+    const localityAtStart = dialogOpen ? $("farmLocality").value : locality;
+    const elevationAtStart = dialogOpen ? $("farmElevation").value : "";
+    if (dialogOpen) {
+      $("farmLatitude").value = latitude; $("farmLongitude").value = longitude;
+      $("farmLocality").value = locality; $("farmElevation").value = "";
+      $("farmLocationStatus").textContent = "Completando localidad y altitud aproximada…";
+    }
+
+    const [resolvedLocality, elevation] = await Promise.all([
+      lookupAddress ? reverseGeocode(latitude, longitude) : Promise.resolve(locality),
+      fetchElevation(latitude, longitude)
+    ]);
+    if (requestId !== state.locationRequestId) return;
+    picked.locality = locality || resolvedLocality || "";
+    picked.elevation_m = elevation;
+    if ($("farmDialog").open) {
+      if ($("farmLocality").value === localityAtStart || $("farmLocality").value === locality) $("farmLocality").value = picked.locality;
+      if ($("farmElevation").value === elevationAtStart || $("farmElevation").value === "") $("farmElevation").value = elevation ?? "";
+      $("farmLocationStatus").textContent = elevation == null
+        ? `Ubicación lista: ${picked.locality || "localidad no encontrada"}. No se pudo calcular la altitud; puedes ingresarla manualmente.`
+        : `Ubicación lista · altitud aproximada: ${Number(elevation).toLocaleString("es-PE")} m s. n. m.`;
+    } else if (!dialogOpen) {
+      const elevationText = elevation == null ? "altitud no disponible" : `${Number(elevation).toLocaleString("es-PE")} m s. n. m.`;
+      toast(`Ubicación seleccionada: ${picked.locality || "localidad no encontrada"} · ${latitude}, ${longitude} · ${elevationText}. Ahora registra el terreno.`);
+    }
   }
 
   async function searchFarmLocation() {
@@ -169,10 +232,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (!Number.isFinite(lat) || !Number.isFinite(lon)) { $("farmLocationStatus").textContent = "La ubicación no devolvió coordenadas válidas."; return; }
           const latitude = Number(lat.toFixed(6)), longitude = Number(lon.toFixed(6));
           const locality = String(place.display_name || "").slice(0, 180);
-          state.locationPick = { latitude, longitude, locality };
-          $("farmLatitude").value = latitude; $("farmLongitude").value = longitude; $("farmLocality").value = locality;
-          if (state.map) { markSearchLocation(latitude, longitude); state.map.setView([latitude, longitude], 14, { animate: true }); }
-          $("farmLocationStatus").textContent = "Ubicación seleccionada: el mapa y las coordenadas se actualizaron.";
+          selectLocationPoint(latitude, longitude, { locality });
           resultsNode.replaceChildren();
         });
         resultsNode.append(result);
@@ -189,8 +249,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     event.preventDefault(); const button = $("saveFarmButton"); setBusy(button, true, "Guardar terreno");
     try {
       const lat = Number($("farmLatitude").value), lon = Number($("farmLongitude").value);
+      const elevationValue = $("farmElevation").value.trim();
+      const elevation = elevationValue === "" ? null : Number(elevationValue);
+      if (elevation !== null && (!Number.isFinite(elevation) || elevation < -500 || elevation > 9000)) throw new Error("La altitud debe estar entre -500 y 9000 metros.");
       let locality = $("farmLocality").value.trim(); if (!locality) locality = await reverseGeocode(lat, lon);
-      const payload = { name: $("farmName").value.trim(), crop: $("farmCrop").value.trim(), area_hectares: Number($("farmArea").value), latitude: lat, longitude: lon, locality };
+      const payload = { name: $("farmName").value.trim(), crop: $("farmCrop").value.trim(), area_hectares: Number($("farmArea").value), latitude: lat, longitude: lon, elevation_m: elevation, locality };
       const id = $("farmId")?.value; const result = id ? await client.from("farms").update(payload).eq("id", id) : await client.from("farms").insert(payload);
       if (result.error) throw result.error;
       $("farmDialog").close(); if (!id) state.locationPick = null; await loadFarms(); toast(id ? "Terreno actualizado." : "Terreno registrado.");

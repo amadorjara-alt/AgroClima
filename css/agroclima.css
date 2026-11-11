@@ -477,3 +477,5 @@ td{color:#4e5f51}
 .location-result{padding:9px 11px;border:1px solid #e3e9df;border-radius:8px;background:#fff;color:#364b38;text-align:left;font-size:11px;line-height:1.45;cursor:pointer}
 .location-result:hover,.location-result:focus-visible{border-color:#77a883;background:#f0f7ed}
 @media(max-width:560px){.location-search-controls{grid-template-columns:1fr}.location-search-controls button{width:100%}}
+.farm-picker-map{height:220px;border-radius:11px;overflow:hidden}
+@media(max-width:560px){.farm-picker-map{height:190px}}

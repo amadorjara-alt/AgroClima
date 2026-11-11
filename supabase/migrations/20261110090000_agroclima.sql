@@ -7,6 +7,7 @@ create table if not exists public.farms (
   area_hectares numeric(12,2) not null check (area_hectares > 0 and area_hectares <= 1000000),
   latitude numeric(9,6) not null check (latitude between -90 and 90),
   longitude numeric(9,6) not null check (longitude between -180 and 180),
+  elevation_m numeric(8,2) check (elevation_m between -500 and 9000),
   locality text not null default '',
   precipitation_threshold_mm numeric(7,2) not null default 20 check (precipitation_threshold_mm between 0 and 1000),
   wind_threshold_kmh numeric(7,2) not null default 50 check (wind_threshold_kmh between 0 and 500),

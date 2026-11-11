@@ -20,6 +20,7 @@ erDiagram
     numeric area_hectares
     numeric latitude
     numeric longitude
+    numeric elevation_m
     text locality
     numeric precipitation_threshold_mm
     numeric wind_threshold_kmh
@@ -52,6 +53,7 @@ erDiagram
 - Los umbrales viven en `farms`; modificar un terreno no cambia su historial previo.
 - Una consulta guarda una fila por cada fecha del pronóstico de siete días. `fetched_at` permite distinguir una consulta nueva de pronósticos anteriores.
 - La humedad se guarda como promedio de las observaciones horarias de Open-Meteo dentro de cada día, con `null` si la API no devuelve esas observaciones.
+- `farms.elevation_m` guarda la altitud aproximada en metros sobre el nivel del mar que devuelve la Elevation API de Open-Meteo (Copernicus DEM GLO-90); el usuario puede corregirla.
 
 ## Seguridad
 
